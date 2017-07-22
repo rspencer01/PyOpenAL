@@ -1,2 +1,5 @@
 *~
 *.pyc
+*.dll
+test_.py
+vorbis.py

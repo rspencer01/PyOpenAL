@@ -1,9 +1,9 @@
 import ctypes
 import ctypes.util
 
-lib_path = ctypes.util.find_library('openal')
+lib_path = ctypes.util.find_library('OpenAL32')
 if lib_path is None:
-    raise ImportError('openal library not found')
+    raise ImportError('OpenAL32.dll not found')
 lib = ctypes.CDLL(lib_path)
 
 ALC_FALSE = 0
@@ -31,7 +31,8 @@ ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311
 ALC_CAPTURE_SAMPLES = 0x312
 
 errors = {}
-for k, v in locals().items():
+local_items = list(locals().items())
+for k, v in local_items:
     if not isinstance(v, int) or not v: continue
     assert v not in errors
     errors[v] = k.replace('_', ' ').lower()
@@ -39,107 +40,107 @@ for k, v in locals().items():
 class ALCError(Exception):
     pass
 
-def check_error(result, func, arguments):
-    err = GetError(0)
+def alc_check_error(result, func, arguments):
+    err = alcGetError(0)
     if err:
-        raise ALCError, errors[err]
+        raise ALCError(errors[err])
     return result
 
-CreateContext = lib.alcCreateContext
-CreateContext.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
-CreateContext.restype = ctypes.c_void_p
-CreateContext.errcheck = check_error
+alcCreateContext = lib.alcCreateContext
+alcCreateContext.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
+alcCreateContext.restype = ctypes.c_void_p
+alcCreateContext.errcheck = alc_check_error
 
-MakeContextCurrent = lib.alcMakeContextCurrent
-MakeContextCurrent.argtypes = [ctypes.c_void_p]
-MakeContextCurrent.restype = ctypes.c_uint8
-MakeContextCurrent.errcheck = check_error
+alcMakeContextCurrent = lib.alcMakeContextCurrent
+alcMakeContextCurrent.argtypes = [ctypes.c_void_p]
+alcMakeContextCurrent.restype = ctypes.c_uint8
+alcMakeContextCurrent.errcheck = alc_check_error
 
-ProcessContext = lib.alcProcessContext
-ProcessContext.argtypes = [ctypes.c_void_p]
-ProcessContext.restype = None
-ProcessContext.errcheck = check_error
+alcProcessContext = lib.alcProcessContext
+alcProcessContext.argtypes = [ctypes.c_void_p]
+alcProcessContext.restype = None
+alcProcessContext.errcheck = alc_check_error
 
-SuspendContext = lib.alcSuspendContext
-SuspendContext.argtypes = [ctypes.c_void_p]
-SuspendContext.restype = None
-SuspendContext.errcheck = check_error
+alcSuspendContext = lib.alcSuspendContext
+alcSuspendContext.argtypes = [ctypes.c_void_p]
+alcSuspendContext.restype = None
+alcSuspendContext.errcheck = alc_check_error
 
-DestroyContext = lib.alcDestroyContext
-DestroyContext.argtypes = [ctypes.c_void_p]
-DestroyContext.restype = None
-DestroyContext.errcheck = check_error
+alcDestroyContext = lib.alcDestroyContext
+alcDestroyContext.argtypes = [ctypes.c_void_p]
+alcDestroyContext.restype = None
+alcDestroyContext.errcheck = alc_check_error
 
-GetCurrentContext = lib.alcGetCurrentContext
-GetCurrentContext.argtypes = []
-GetCurrentContext.restype = ctypes.c_void_p
-GetCurrentContext.errcheck = check_error
+alcGetCurrentContext = lib.alcGetCurrentContext
+alcGetCurrentContext.argtypes = []
+alcGetCurrentContext.restype = ctypes.c_void_p
+alcGetCurrentContext.errcheck = alc_check_error
 
-GetContextsDevice = lib.alcGetContextsDevice
-GetContextsDevice.argtypes = [ctypes.c_void_p]
-GetContextsDevice.restype = ctypes.c_void_p
-GetContextsDevice.errcheck = check_error
+alcGetContextsDevice = lib.alcGetContextsDevice
+alcGetContextsDevice.argtypes = [ctypes.c_void_p]
+alcGetContextsDevice.restype = ctypes.c_void_p
+alcGetContextsDevice.errcheck = alc_check_error
 
-OpenDevice = lib.alcOpenDevice
-OpenDevice.argtypes = [ctypes.c_char_p]
-OpenDevice.restype = ctypes.c_void_p
-OpenDevice.errcheck = check_error
+alcOpenDevice = lib.alcOpenDevice
+alcOpenDevice.argtypes = [ctypes.c_char_p]
+alcOpenDevice.restype = ctypes.c_void_p
+alcOpenDevice.errcheck = alc_check_error
 
-CloseDevice = lib.alcCloseDevice
-CloseDevice.argtypes = [ctypes.c_void_p]
-CloseDevice.restype = ctypes.c_uint8
-CloseDevice.errcheck = check_error
+alcCloseDevice = lib.alcCloseDevice
+alcCloseDevice.argtypes = [ctypes.c_void_p]
+alcCloseDevice.restype = ctypes.c_uint8
+alcCloseDevice.errcheck = alc_check_error
 
-GetError = lib.alcGetError
-GetError.argtypes = [ctypes.c_void_p]
-GetError.restype = ctypes.c_int
+alcGetError = lib.alcGetError
+alcGetError.argtypes = [ctypes.c_void_p]
+alcGetError.restype = ctypes.c_int
 
-IsExtensionPresent = lib.alcIsExtensionPresent
-IsExtensionPresent.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-IsExtensionPresent.restype = ctypes.c_uint8
-IsExtensionPresent.errcheck = check_error
+alcIsExtensionPresent = lib.alcIsExtensionPresent
+alcIsExtensionPresent.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+alcIsExtensionPresent.restype = ctypes.c_uint8
+alcIsExtensionPresent.errcheck = alc_check_error
 
-GetProcAddress = lib.alcGetProcAddress
-GetProcAddress.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-GetProcAddress.restype = ctypes.c_void_p
-GetProcAddress.errcheck = check_error
+alcGetProcAddress = lib.alcGetProcAddress
+alcGetProcAddress.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+alcGetProcAddress.restype = ctypes.c_void_p
+alcGetProcAddress.errcheck = alc_check_error
 
-GetEnumValue = lib.alcGetEnumValue
-GetEnumValue.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-GetEnumValue.restype = ctypes.c_int
-GetEnumValue.errcheck = check_error
+alcGetEnumValue = lib.alcGetEnumValue
+alcGetEnumValue.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+alcGetEnumValue.restype = ctypes.c_int
+alcGetEnumValue.errcheck = alc_check_error
 
-GetString = lib.alcGetString
-GetString.argtypes = [ctypes.c_void_p, ctypes.c_int]
-GetString.restype = ctypes.c_char_p
-GetString.errcheck = check_error
+alcGetString = lib.alcGetString
+alcGetString.argtypes = [ctypes.c_void_p, ctypes.c_int]
+alcGetString.restype = ctypes.c_char_p
+alcGetString.errcheck = alc_check_error
 
-GetIntegerv = lib.alcGetIntegerv
-GetIntegerv.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetIntegerv.restype = None
-GetIntegerv.errcheck = check_error
+alcGetIntegerv = lib.alcGetIntegerv
+alcGetIntegerv.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alcGetIntegerv.restype = None
+alcGetIntegerv.errcheck = alc_check_error
 
-CaptureOpenDevice = lib.alcCaptureOpenDevice
-CaptureOpenDevice.argtypes = [ctypes.c_char_p, ctypes.c_uint, ctypes.c_int, ctypes.c_int]
-CaptureOpenDevice.restype = ctypes.c_void_p
-CaptureOpenDevice.errcheck = check_error
+alcCaptureOpenDevice = lib.alcCaptureOpenDevice
+alcCaptureOpenDevice.argtypes = [ctypes.c_char_p, ctypes.c_uint, ctypes.c_int, ctypes.c_int]
+alcCaptureOpenDevice.restype = ctypes.c_void_p
+alcCaptureOpenDevice.errcheck = alc_check_error
 
-CaptureCloseDevice = lib.alcCaptureCloseDevice
-CaptureCloseDevice.argtypes = [ctypes.c_void_p]
-CaptureCloseDevice.restype = ctypes.c_uint8
-CaptureCloseDevice.errcheck = check_error
+alcCaptureCloseDevice = lib.alcCaptureCloseDevice
+alcCaptureCloseDevice.argtypes = [ctypes.c_void_p]
+alcCaptureCloseDevice.restype = ctypes.c_uint8
+alcCaptureCloseDevice.errcheck = alc_check_error
 
-CaptureStart = lib.alcCaptureStart
-CaptureStart.argtypes = [ctypes.c_void_p]
-CaptureStart.restype = None
-CaptureStart.errcheck = check_error
+alcCaptureStart = lib.alcCaptureStart
+alcCaptureStart.argtypes = [ctypes.c_void_p]
+alcCaptureStart.restype = None
+alcCaptureStart.errcheck = alc_check_error
 
-CaptureStop = lib.alcCaptureStop
-CaptureStop.argtypes = [ctypes.c_void_p]
-CaptureStop.restype = None
-CaptureStop.errcheck = check_error
+alcCaptureStop = lib.alcCaptureStop
+alcCaptureStop.argtypes = [ctypes.c_void_p]
+alcCaptureStop.restype = None
+alcCaptureStop.errcheck = alc_check_error
 
-CaptureSamples = lib.alcCaptureSamples
-CaptureSamples.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
-CaptureSamples.restype = None
-CaptureSamples.errcheck = check_error
+alcCaptureSamples = lib.alcCaptureSamples
+alcCaptureSamples.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
+alcCaptureSamples.restype = None
+alcCaptureSamples.errcheck = alc_check_error

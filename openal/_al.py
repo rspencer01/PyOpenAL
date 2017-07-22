@@ -1,79 +1,80 @@
 import ctypes
 import ctypes.util
 
-lib_path = ctypes.util.find_library('openal')
+lib_path = ctypes.util.find_library('OpenAL32')
 if lib_path is None:
-    raise ImportError('openal library not found')
+    raise ImportError('OpenAL32.dll not found')
 lib = ctypes.CDLL(lib_path)
 
-NONE = 0
-FALSE = 0
-TRUE = 1
-SOURCE_RELATIVE = 0x202
-CONE_INNER_ANGLE = 0x1001
-CONE_OUTER_ANGLE = 0x1002
-PITCH = 0x1003
-POSITION = 0x1004
-DIRECTION = 0x1005
-VELOCITY = 0x1006
-LOOPING = 0x1007
-BUFFER = 0x1009
-GAIN = 0x100A
-MIN_GAIN = 0x100D
-MAX_GAIN = 0x100E
-ORIENTATION = 0x100F
-SOURCE_STATE = 0x1010
-INITIAL = 0x1011
-PLAYING = 0x1012
-PAUSED = 0x1013
-STOPPED = 0x1014
-BUFFERS_QUEUED = 0x1015
-BUFFERS_PROCESSED = 0x1016
-SEC_OFFSET = 0x1024
-SAMPLE_OFFSET = 0x1025
-BYTE_OFFSET = 0x1026
-SOURCE_TYPE = 0x1027
-STATIC = 0x1028
-STREAMING = 0x1029
-UNDETERMINED = 0x1030
-FORMAT_MONO8 = 0x1100
-FORMAT_MONO16 = 0x1101
-FORMAT_STEREO8 = 0x1102
-FORMAT_STEREO16 = 0x1103
-REFERENCE_DISTANCE = 0x1020
-ROLLOFF_FACTOR = 0x1021
-CONE_OUTER_GAIN = 0x1022
-MAX_DISTANCE = 0x1023
-FREQUENCY = 0x2001
-BITS = 0x2002
-CHANNELS = 0x2003
-SIZE = 0x2004
-UNUSED = 0x2010
-PENDING = 0x2011
-PROCESSED = 0x2012
-NO_ERROR = FALSE
-INVALID_NAME = 0xA001
-INVALID_ENUM = 0xA002
-INVALID_VALUE = 0xA003
-INVALID_OPERATION = 0xA004
-OUT_OF_MEMORY = 0xA005
-VENDOR = 0xB001
-VERSION = 0xB002
-RENDERER = 0xB003
-EXTENSIONS = 0xB004
-DOPPLER_FACTOR = 0xC000
-DOPPLER_VELOCITY = 0xC001
-SPEED_OF_SOUND = 0xC003
-DISTANCE_MODEL = 0xD000
-INVERSE_DISTANCE = 0xD001
-INVERSE_DISTANCE_CLAMPED = 0xD002
-LINEAR_DISTANCE = 0xD003
-LINEAR_DISTANCE_CLAMPED = 0xD004
-EXPONENT_DISTANCE = 0xD005
-EXPONENT_DISTANCE_CLAMPED = 0xD006
+AL_NONE = 0
+AL_FALSE = 0
+AL_TRUE = 1
+AL_SOURCE_RELATIVE = 0x202
+AL_CONE_INNER_ANGLE = 0x1001
+AL_CONE_OUTER_ANGLE = 0x1002
+AL_PITCH = 0x1003
+AL_POSITION = 0x1004
+AL_DIRECTION = 0x1005
+AL_VELOCITY = 0x1006
+AL_LOOPING = 0x1007
+AL_BUFFER = 0x1009
+AL_GAIN = 0x100A
+AL_MIN_GAIN = 0x100D
+AL_MAX_GAIN = 0x100E
+AL_ORIENTATION = 0x100F
+AL_SOURCE_STATE = 0x1010
+AL_INITIAL = 0x1011
+AL_PLAYING = 0x1012
+AL_PAUSED = 0x1013
+AL_STOPPED = 0x1014
+AL_BUFFERS_QUEUED = 0x1015
+AL_BUFFERS_PROCESSED = 0x1016
+AL_SEC_OFFSET = 0x1024
+AL_SAMPLE_OFFSET = 0x1025
+AL_BYTE_OFFSET = 0x1026
+AL_SOURCE_TYPE = 0x1027
+AL_STATIC = 0x1028
+AL_STREAMING = 0x1029
+AL_UNDETERMINED = 0x1030
+AL_FORMAT_MONO8 = 0x1100
+AL_FORMAT_MONO16 = 0x1101
+AL_FORMAT_STEREO8 = 0x1102
+AL_FORMAT_STEREO16 = 0x1103
+AL_REFERENCE_DISTANCE = 0x1020
+AL_ROLLOFF_FACTOR = 0x1021
+AL_CONE_OUTER_GAIN = 0x1022
+AL_MAX_DISTANCE = 0x1023
+AL_FREQUENCY = 0x2001
+AL_BITS = 0x2002
+AL_CHANNELS = 0x2003
+AL_SIZE = 0x2004
+AL_UNUSED = 0x2010
+AL_PENDING = 0x2011
+AL_PROCESSED = 0x2012
+AL_NO_ERROR = AL_FALSE
+AL_INVALID_NAME = 0xA001
+AL_INVALID_ENUM = 0xA002
+AL_INVALID_VALUE = 0xA003
+AL_INVALID_OPERATION = 0xA004
+AL_OUT_OF_MEMORY = 0xA005
+AL_VENDOR = 0xB001
+AL_VERSION = 0xB002
+AL_RENDERER = 0xB003
+AL_EXTENSIONS = 0xB004
+AL_DOPPLER_FACTOR = 0xC000
+AL_DOPPLER_VELOCITY = 0xC001
+AL_SPEED_OF_SOUND = 0xC003
+AL_DISTANCE_MODEL = 0xD000
+AL_INVERSE_DISTANCE = 0xD001
+AL_INVERSE_DISTANCE_CLAMPED = 0xD002
+AL_LINEAR_DISTANCE = 0xD003
+AL_LINEAR_DISTANCE_CLAMPED = 0xD004
+AL_EXPONENT_DISTANCE = 0xD005
+AL_EXPONENT_DISTANCE_CLAMPED = 0xD006
 
 errors = {}
-for k, v in locals().items():
+local_items = list(locals().items())
+for k, v in local_items:
     if not isinstance(v, int) or not v: continue
     assert v not in errors
     errors[v] = k.replace('_', ' ').lower()
@@ -81,372 +82,374 @@ for k, v in locals().items():
 class ALError(Exception):
     pass
 
-def check_error(result, func, arguments):
-    err = GetError()
+alGetError = lib.alGetError
+alGetError.argtypes = []
+alGetError.restype = ctypes.c_int
+
+def al_check_error(result, func, arguments):
+    err = alGetError()
     if err:
-        raise ALError, errors[err]
+        raise ALError(errors[err])
     return result
 
-Enable = lib.alEnable
-Enable.argtypes = [ctypes.c_int]
-Enable.restype = None
-Enable.errcheck = check_error
-
-Disable = lib.alDisable
-Disable.argtypes = [ctypes.c_int]
-Disable.restype = None
-Disable.errcheck = check_error
-
-IsEnabled = lib.alIsEnabled
-IsEnabled.argtypes = [ctypes.c_int]
-IsEnabled.restype = ctypes.c_uint8
-IsEnabled.errcheck = check_error
-
-GetString = lib.alGetString
-GetString.argtypes = [ctypes.c_int]
-GetString.restype = ctypes.c_char_p
-GetString.errcheck = check_error
-
-GetBooleanv = lib.alGetBooleanv
-GetBooleanv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint8)]
-GetBooleanv.restype = None
-GetBooleanv.errcheck = check_error
-
-GetIntegerv = lib.alGetIntegerv
-GetIntegerv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetIntegerv.restype = None
-GetIntegerv.errcheck = check_error
-
-GetFloatv = lib.alGetFloatv
-GetFloatv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetFloatv.restype = None
-GetFloatv.errcheck = check_error
-
-GetDoublev = lib.alGetDoublev
-GetDoublev.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double)]
-GetDoublev.restype = None
-GetDoublev.errcheck = check_error
-
-GetBoolean = lib.alGetBoolean
-GetBoolean.argtypes = [ctypes.c_int]
-GetBoolean.restype = ctypes.c_uint8
-GetBoolean.errcheck = check_error
-
-GetInteger = lib.alGetInteger
-GetInteger.argtypes = [ctypes.c_int]
-GetInteger.restype = ctypes.c_int
-GetInteger.errcheck = check_error
-
-GetFloat = lib.alGetFloat
-GetFloat.argtypes = [ctypes.c_int]
-GetFloat.restype = ctypes.c_float
-GetFloat.errcheck = check_error
-
-GetDouble = lib.alGetDouble
-GetDouble.argtypes = [ctypes.c_int]
-GetDouble.restype = ctypes.c_double
-GetDouble.errcheck = check_error
-
-GetError = lib.alGetError
-GetError.argtypes = []
-GetError.restype = ctypes.c_int
-
-IsExtensionPresent = lib.alIsExtensionPresent
-IsExtensionPresent.argtypes = [ctypes.c_char_p]
-IsExtensionPresent.restype = ctypes.c_uint8
-IsExtensionPresent.errcheck = check_error
-
-GetProcAddress = lib.alGetProcAddress
-GetProcAddress.argtypes = [ctypes.c_char_p]
-GetProcAddress.restype = ctypes.c_void_p
-GetProcAddress.errcheck = check_error
-
-GetEnumValue = lib.alGetEnumValue
-GetEnumValue.argtypes = [ctypes.c_char_p]
-GetEnumValue.restype = ctypes.c_int
-GetEnumValue.errcheck = check_error
-
-Listenerf = lib.alListenerf
-Listenerf.argtypes = [ctypes.c_int, ctypes.c_float]
-Listenerf.restype = None
-Listenerf.errcheck = check_error
-
-Listener3f = lib.alListener3f
-Listener3f.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-Listener3f.restype = None
-Listener3f.errcheck = check_error
-
-Listenerfv = lib.alListenerfv
-Listenerfv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-Listenerfv.restype = None
-Listenerfv.errcheck = check_error
-
-Listeneri = lib.alListeneri
-Listeneri.argtypes = [ctypes.c_int, ctypes.c_int]
-Listeneri.restype = None
-Listeneri.errcheck = check_error
-
-Listener3i = lib.alListener3i
-Listener3i.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-Listener3i.restype = None
-Listener3i.errcheck = check_error
-
-Listeneriv = lib.alListeneriv
-Listeneriv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-Listeneriv.restype = None
-Listeneriv.errcheck = check_error
-
-GetListenerf = lib.alGetListenerf
-GetListenerf.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetListenerf.restype = None
-GetListenerf.errcheck = check_error
-
-GetListener3f = lib.alGetListener3f
-GetListener3f.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
-GetListener3f.restype = None
-GetListener3f.errcheck = check_error
-
-GetListenerfv = lib.alGetListenerfv
-GetListenerfv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetListenerfv.restype = None
-GetListenerfv.errcheck = check_error
-
-GetListeneri = lib.alGetListeneri
-GetListeneri.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetListeneri.restype = None
-GetListeneri.errcheck = check_error
-
-GetListener3i = lib.alGetListener3i
-GetListener3i.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
-GetListener3i.restype = None
-GetListener3i.errcheck = check_error
-
-GetListeneriv = lib.alGetListeneriv
-GetListeneriv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetListeneriv.restype = None
-GetListeneriv.errcheck = check_error
-
-GenSources = lib.alGenSources
-GenSources.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-GenSources.restype = None
-GenSources.errcheck = check_error
-
-DeleteSources = lib.alDeleteSources
-DeleteSources.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-DeleteSources.restype = None
-DeleteSources.errcheck = check_error
-
-IsSource = lib.alIsSource
-IsSource.argtypes = [ctypes.c_uint]
-IsSource.restype = ctypes.c_uint8
-IsSource.errcheck = check_error
-
-Sourcef = lib.alSourcef
-Sourcef.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float]
-Sourcef.restype = None
-Sourcef.errcheck = check_error
-
-Source3f = lib.alSource3f
-Source3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-Source3f.restype = None
-Source3f.errcheck = check_error
-
-Sourcefv = lib.alSourcefv
-Sourcefv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-Sourcefv.restype = None
-Sourcefv.errcheck = check_error
-
-Sourcei = lib.alSourcei
-Sourcei.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int]
-Sourcei.restype = None
-Sourcei.errcheck = check_error
-
-Source3i = lib.alSource3i
-Source3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-Source3i.restype = None
-Source3i.errcheck = check_error
-
-Sourceiv = lib.alSourceiv
-Sourceiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-Sourceiv.restype = None
-Sourceiv.errcheck = check_error
-
-GetSourcef = lib.alGetSourcef
-GetSourcef.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetSourcef.restype = None
-GetSourcef.errcheck = check_error
-
-GetSource3f = lib.alGetSource3f
-GetSource3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
-GetSource3f.restype = None
-GetSource3f.errcheck = check_error
-
-GetSourcefv = lib.alGetSourcefv
-GetSourcefv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetSourcefv.restype = None
-GetSourcefv.errcheck = check_error
-
-GetSourcei = lib.alGetSourcei
-GetSourcei.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetSourcei.restype = None
-GetSourcei.errcheck = check_error
-
-GetSource3i = lib.alGetSource3i
-GetSource3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
-GetSource3i.restype = None
-GetSource3i.errcheck = check_error
-
-GetSourceiv = lib.alGetSourceiv
-GetSourceiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetSourceiv.restype = None
-GetSourceiv.errcheck = check_error
-
-SourcePlayv = lib.alSourcePlayv
-SourcePlayv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourcePlayv.restype = None
-SourcePlayv.errcheck = check_error
-
-SourceStopv = lib.alSourceStopv
-SourceStopv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourceStopv.restype = None
-SourceStopv.errcheck = check_error
-
-SourceRewindv = lib.alSourceRewindv
-SourceRewindv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourceRewindv.restype = None
-SourceRewindv.errcheck = check_error
-
-SourcePausev = lib.alSourcePausev
-SourcePausev.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourcePausev.restype = None
-SourcePausev.errcheck = check_error
-
-SourcePlay = lib.alSourcePlay
-SourcePlay.argtypes = [ctypes.c_uint]
-SourcePlay.restype = None
-SourcePlay.errcheck = check_error
-
-SourceStop = lib.alSourceStop
-SourceStop.argtypes = [ctypes.c_uint]
-SourceStop.restype = None
-SourceStop.errcheck = check_error
-
-SourceRewind = lib.alSourceRewind
-SourceRewind.argtypes = [ctypes.c_uint]
-SourceRewind.restype = None
-SourceRewind.errcheck = check_error
-
-SourcePause = lib.alSourcePause
-SourcePause.argtypes = [ctypes.c_uint]
-SourcePause.restype = None
-SourcePause.errcheck = check_error
-
-SourceQueueBuffers = lib.alSourceQueueBuffers
-SourceQueueBuffers.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourceQueueBuffers.restype = None
-SourceQueueBuffers.errcheck = check_error
-
-SourceUnqueueBuffers = lib.alSourceUnqueueBuffers
-SourceUnqueueBuffers.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-SourceUnqueueBuffers.restype = None
-SourceUnqueueBuffers.errcheck = check_error
-
-GenBuffers = lib.alGenBuffers
-GenBuffers.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-GenBuffers.restype = None
-GenBuffers.errcheck = check_error
-
-DeleteBuffers = lib.alDeleteBuffers
-DeleteBuffers.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
-DeleteBuffers.restype = None
-DeleteBuffers.errcheck = check_error
-
-IsBuffer = lib.alIsBuffer
-IsBuffer.argtypes = [ctypes.c_uint]
-IsBuffer.restype = ctypes.c_uint8
-IsBuffer.errcheck = check_error
-
-BufferData = lib.alBufferData
-BufferData.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
-BufferData.restype = None
-BufferData.errcheck = check_error
-
-Bufferf = lib.alBufferf
-Bufferf.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float]
-Bufferf.restype = None
-Bufferf.errcheck = check_error
-
-Buffer3f = lib.alBuffer3f
-Buffer3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-Buffer3f.restype = None
-Buffer3f.errcheck = check_error
-
-Bufferfv = lib.alBufferfv
-Bufferfv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-Bufferfv.restype = None
-Bufferfv.errcheck = check_error
-
-Bufferi = lib.alBufferi
-Bufferi.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int]
-Bufferi.restype = None
-Bufferi.errcheck = check_error
-
-Buffer3i = lib.alBuffer3i
-Buffer3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-Buffer3i.restype = None
-Buffer3i.errcheck = check_error
-
-Bufferiv = lib.alBufferiv
-Bufferiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-Bufferiv.restype = None
-Bufferiv.errcheck = check_error
-
-GetBufferf = lib.alGetBufferf
-GetBufferf.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetBufferf.restype = None
-GetBufferf.errcheck = check_error
-
-GetBuffer3f = lib.alGetBuffer3f
-GetBuffer3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
-GetBuffer3f.restype = None
-GetBuffer3f.errcheck = check_error
-
-GetBufferfv = lib.alGetBufferfv
-GetBufferfv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
-GetBufferfv.restype = None
-GetBufferfv.errcheck = check_error
-
-GetBufferi = lib.alGetBufferi
-GetBufferi.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetBufferi.restype = None
-GetBufferi.errcheck = check_error
-
-GetBuffer3i = lib.alGetBuffer3i
-GetBuffer3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
-GetBuffer3i.restype = None
-GetBuffer3i.errcheck = check_error
-
-GetBufferiv = lib.alGetBufferiv
-GetBufferiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-GetBufferiv.restype = None
-GetBufferiv.errcheck = check_error
-
-DopplerFactor = lib.alDopplerFactor
-DopplerFactor.argtypes = [ctypes.c_float]
-DopplerFactor.restype = None
-DopplerFactor.errcheck = check_error
-
-DopplerVelocity = lib.alDopplerVelocity
-DopplerVelocity.argtypes = [ctypes.c_float]
-DopplerVelocity.restype = None
-DopplerVelocity.errcheck = check_error
-
-SpeedOfSound = lib.alSpeedOfSound
-SpeedOfSound.argtypes = [ctypes.c_float]
-SpeedOfSound.restype = None
-SpeedOfSound.errcheck = check_error
-
-DistanceModel = lib.alDistanceModel
-DistanceModel.argtypes = [ctypes.c_int]
-DistanceModel.restype = None
-DistanceModel.errcheck = check_error
+alEnable = lib.alEnable
+alEnable.argtypes = [ctypes.c_int]
+alEnable.restype = None
+alEnable.errcheck = al_check_error
+
+alDisable = lib.alDisable
+alDisable.argtypes = [ctypes.c_int]
+alDisable.restype = None
+alDisable.errcheck = al_check_error
+
+alIsEnabled = lib.alIsEnabled
+alIsEnabled.argtypes = [ctypes.c_int]
+alIsEnabled.restype = ctypes.c_uint8
+alIsEnabled.errcheck = al_check_error
+
+alGetString = lib.alGetString
+alGetString.argtypes = [ctypes.c_int]
+alGetString.restype = ctypes.c_char_p
+alGetString.errcheck = al_check_error
+
+alGetBooleanv = lib.alGetBooleanv
+alGetBooleanv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint8)]
+alGetBooleanv.restype = None
+alGetBooleanv.errcheck = al_check_error
+
+alGetIntegerv = lib.alGetIntegerv
+alGetIntegerv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetIntegerv.restype = None
+alGetIntegerv.errcheck = al_check_error
+
+alGetFloatv = lib.alGetFloatv
+alGetFloatv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetFloatv.restype = None
+alGetFloatv.errcheck = al_check_error
+
+alGetDoublev = lib.alGetDoublev
+alGetDoublev.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double)]
+alGetDoublev.restype = None
+alGetDoublev.errcheck = al_check_error
+
+alGetBoolean = lib.alGetBoolean
+alGetBoolean.argtypes = [ctypes.c_int]
+alGetBoolean.restype = ctypes.c_uint8
+alGetBoolean.errcheck = al_check_error
+
+alGetInteger = lib.alGetInteger
+alGetInteger.argtypes = [ctypes.c_int]
+alGetInteger.restype = ctypes.c_int
+alGetInteger.errcheck = al_check_error
+
+alGetFloat = lib.alGetFloat
+alGetFloat.argtypes = [ctypes.c_int]
+alGetFloat.restype = ctypes.c_float
+alGetFloat.errcheck = al_check_error
+
+alGetDouble = lib.alGetDouble
+alGetDouble.argtypes = [ctypes.c_int]
+alGetDouble.restype = ctypes.c_double
+alGetDouble.errcheck = al_check_error
+
+
+
+alIsExtensionPresent = lib.alIsExtensionPresent
+alIsExtensionPresent.argtypes = [ctypes.c_char_p]
+alIsExtensionPresent.restype = ctypes.c_uint8
+alIsExtensionPresent.errcheck = al_check_error
+
+alGetProcAddress = lib.alGetProcAddress
+alGetProcAddress.argtypes = [ctypes.c_char_p]
+alGetProcAddress.restype = ctypes.c_void_p
+alGetProcAddress.errcheck = al_check_error
+
+alGetEnumValue = lib.alGetEnumValue
+alGetEnumValue.argtypes = [ctypes.c_char_p]
+alGetEnumValue.restype = ctypes.c_int
+alGetEnumValue.errcheck = al_check_error
+
+alListenerf = lib.alListenerf
+alListenerf.argtypes = [ctypes.c_int, ctypes.c_float]
+alListenerf.restype = None
+alListenerf.errcheck = al_check_error
+
+alListener3f = lib.alListener3f
+alListener3f.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+alListener3f.restype = None
+alListener3f.errcheck = al_check_error
+
+alListenerfv = lib.alListenerfv
+alListenerfv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alListenerfv.restype = None
+alListenerfv.errcheck = al_check_error
+
+alListeneri = lib.alListeneri
+alListeneri.argtypes = [ctypes.c_int, ctypes.c_int]
+alListeneri.restype = None
+alListeneri.errcheck = al_check_error
+
+alListener3i = lib.alListener3i
+alListener3i.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+alListener3i.restype = None
+alListener3i.errcheck = al_check_error
+
+alListeneriv = lib.alListeneriv
+alListeneriv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alListeneriv.restype = None
+alListeneriv.errcheck = al_check_error
+
+alGetListenerf = lib.alGetListenerf
+alGetListenerf.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetListenerf.restype = None
+alGetListenerf.errcheck = al_check_error
+
+alGetListener3f = lib.alGetListener3f
+alGetListener3f.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
+alGetListener3f.restype = None
+alGetListener3f.errcheck = al_check_error
+
+alGetListenerfv = lib.alGetListenerfv
+alGetListenerfv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetListenerfv.restype = None
+alGetListenerfv.errcheck = al_check_error
+
+alGetListeneri = lib.alGetListeneri
+alGetListeneri.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetListeneri.restype = None
+alGetListeneri.errcheck = al_check_error
+
+alGetListener3i = lib.alGetListener3i
+alGetListener3i.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+alGetListener3i.restype = None
+alGetListener3i.errcheck = al_check_error
+
+alGetListeneriv = lib.alGetListeneriv
+alGetListeneriv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetListeneriv.restype = None
+alGetListeneriv.errcheck = al_check_error
+
+alGenSources = lib.alGenSources
+alGenSources.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alGenSources.restype = None
+alGenSources.errcheck = al_check_error
+
+alDeleteSources = lib.alDeleteSources
+alDeleteSources.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alDeleteSources.restype = None
+alDeleteSources.errcheck = al_check_error
+
+alIsSource = lib.alIsSource
+alIsSource.argtypes = [ctypes.c_uint]
+alIsSource.restype = ctypes.c_uint8
+alIsSource.errcheck = al_check_error
+
+alSourcef = lib.alSourcef
+alSourcef.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float]
+alSourcef.restype = None
+alSourcef.errcheck = al_check_error
+
+alSource3f = lib.alSource3f
+alSource3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+alSource3f.restype = None
+alSource3f.errcheck = al_check_error
+
+alSourcefv = lib.alSourcefv
+alSourcefv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alSourcefv.restype = None
+alSourcefv.errcheck = al_check_error
+
+alSourcei = lib.alSourcei
+alSourcei.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int]
+alSourcei.restype = None
+alSourcei.errcheck = al_check_error
+
+alSource3i = lib.alSource3i
+alSource3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+alSource3i.restype = None
+alSource3i.errcheck = al_check_error
+
+alSourceiv = lib.alSourceiv
+alSourceiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alSourceiv.restype = None
+alSourceiv.errcheck = al_check_error
+
+alGetSourcef = lib.alGetSourcef
+alGetSourcef.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetSourcef.restype = None
+alGetSourcef.errcheck = al_check_error
+
+alGetSource3f = lib.alGetSource3f
+alGetSource3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
+alGetSource3f.restype = None
+alGetSource3f.errcheck = al_check_error
+
+alGetSourcefv = lib.alGetSourcefv
+alGetSourcefv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetSourcefv.restype = None
+alGetSourcefv.errcheck = al_check_error
+
+alGetSourcei = lib.alGetSourcei
+alGetSourcei.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetSourcei.restype = None
+alGetSourcei.errcheck = al_check_error
+
+alGetSource3i = lib.alGetSource3i
+alGetSource3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+alGetSource3i.restype = None
+alGetSource3i.errcheck = al_check_error
+
+alGetSourceiv = lib.alGetSourceiv
+alGetSourceiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetSourceiv.restype = None
+alGetSourceiv.errcheck = al_check_error
+
+alSourcePlayv = lib.alSourcePlayv
+alSourcePlayv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourcePlayv.restype = None
+alSourcePlayv.errcheck = al_check_error
+
+alSourceStopv = lib.alSourceStopv
+alSourceStopv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourceStopv.restype = None
+alSourceStopv.errcheck = al_check_error
+
+alSourceRewindv = lib.alSourceRewindv
+alSourceRewindv.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourceRewindv.restype = None
+alSourceRewindv.errcheck = al_check_error
+
+alSourcePausev = lib.alSourcePausev
+alSourcePausev.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourcePausev.restype = None
+alSourcePausev.errcheck = al_check_error
+
+alSourcePlay = lib.alSourcePlay
+alSourcePlay.argtypes = [ctypes.c_uint]
+alSourcePlay.restype = None
+alSourcePlay.errcheck = al_check_error
+
+alSourceStop = lib.alSourceStop
+alSourceStop.argtypes = [ctypes.c_uint]
+alSourceStop.restype = None
+alSourceStop.errcheck = al_check_error
+
+alSourceRewind = lib.alSourceRewind
+alSourceRewind.argtypes = [ctypes.c_uint]
+alSourceRewind.restype = None
+alSourceRewind.errcheck = al_check_error
+
+alSourcePause = lib.alSourcePause
+alSourcePause.argtypes = [ctypes.c_uint]
+alSourcePause.restype = None
+alSourcePause.errcheck = al_check_error
+
+alSourceQueueBuffers = lib.alSourceQueueBuffers
+alSourceQueueBuffers.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourceQueueBuffers.restype = None
+alSourceQueueBuffers.errcheck = al_check_error
+
+alSourceUnqueueBuffers = lib.alSourceUnqueueBuffers
+alSourceUnqueueBuffers.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alSourceUnqueueBuffers.restype = None
+alSourceUnqueueBuffers.errcheck = al_check_error
+
+alGenBuffers = lib.alGenBuffers
+alGenBuffers.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alGenBuffers.restype = None
+alGenBuffers.errcheck = al_check_error
+
+alDeleteBuffers = lib.alDeleteBuffers
+alDeleteBuffers.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint)]
+alDeleteBuffers.restype = None
+alDeleteBuffers.errcheck = al_check_error
+
+alIsBuffer = lib.alIsBuffer
+alIsBuffer.argtypes = [ctypes.c_uint]
+alIsBuffer.restype = ctypes.c_uint8
+alIsBuffer.errcheck = al_check_error
+
+alBufferData = lib.alBufferData
+alBufferData.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+alBufferData.restype = None
+alBufferData.errcheck = al_check_error
+
+alBufferf = lib.alBufferf
+alBufferf.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float]
+alBufferf.restype = None
+alBufferf.errcheck = al_check_error
+
+alBuffer3f = lib.alBuffer3f
+alBuffer3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+alBuffer3f.restype = None
+alBuffer3f.errcheck = al_check_error
+
+alBufferfv = lib.alBufferfv
+alBufferfv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alBufferfv.restype = None
+alBufferfv.errcheck = al_check_error
+
+alBufferi = lib.alBufferi
+alBufferi.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int]
+alBufferi.restype = None
+alBufferi.errcheck = al_check_error
+
+alBuffer3i = lib.alBuffer3i
+alBuffer3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+alBuffer3i.restype = None
+alBuffer3i.errcheck = al_check_error
+
+alBufferiv = lib.alBufferiv
+alBufferiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alBufferiv.restype = None
+alBufferiv.errcheck = al_check_error
+
+alGetBufferf = lib.alGetBufferf
+alGetBufferf.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetBufferf.restype = None
+alGetBufferf.errcheck = al_check_error
+
+alGetBuffer3f = lib.alGetBuffer3f
+alGetBuffer3f.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
+alGetBuffer3f.restype = None
+alGetBuffer3f.errcheck = al_check_error
+
+alGetBufferfv = lib.alGetBufferfv
+alGetBufferfv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+alGetBufferfv.restype = None
+alGetBufferfv.errcheck = al_check_error
+
+alGetBufferi = lib.alGetBufferi
+alGetBufferi.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetBufferi.restype = None
+alGetBufferi.errcheck = al_check_error
+
+alGetBuffer3i = lib.alGetBuffer3i
+alGetBuffer3i.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+alGetBuffer3i.restype = None
+alGetBuffer3i.errcheck = al_check_error
+
+alGetBufferiv = lib.alGetBufferiv
+alGetBufferiv.argtypes = [ctypes.c_uint, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+alGetBufferiv.restype = None
+alGetBufferiv.errcheck = al_check_error
+
+alDopplerFactor = lib.alDopplerFactor
+alDopplerFactor.argtypes = [ctypes.c_float]
+alDopplerFactor.restype = None
+alDopplerFactor.errcheck = al_check_error
+
+alDopplerVelocity = lib.alDopplerVelocity
+alDopplerVelocity.argtypes = [ctypes.c_float]
+alDopplerVelocity.restype = None
+alDopplerVelocity.errcheck = al_check_error
+
+alSpeedOfSound = lib.alSpeedOfSound
+alSpeedOfSound.argtypes = [ctypes.c_float]
+alSpeedOfSound.restype = None
+alSpeedOfSound.errcheck = al_check_error
+
+alDistanceModel = lib.alDistanceModel
+alDistanceModel.argtypes = [ctypes.c_int]
+alDistanceModel.restype = None
+alDistanceModel.errcheck = al_check_error
