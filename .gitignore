@@ -3,3 +3,9 @@
 *.dll
 test_.py
 vorbis.py
+*.opus
+pyogg/ogg.py
+pyogg/opus.py
+pyogg/__init__.py
+test.py
+*.ogg
