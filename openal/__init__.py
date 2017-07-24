@@ -22,13 +22,15 @@ __name__ = "python-openal"
 
 MAX_FLOAT = sys.float_info.max
 
+_items = []
+
 class OalError(Exception):
     pass
 
 def _err(msg):
     raise OalError(msg)
 
-class vec6:
+class _vec6:
     def __init__(self, *args):
         if len(args) == 6:
             self.x = float(args[0])
@@ -217,13 +219,16 @@ class vec6:
     def __str__(self):
         return "vec6( {} , {} , {} , {} , {} , {})".format(self.x, self.y, self.z, self.a, self.b, self.c)
 
+    def __repr__(self):
+        return self.__str__()
+
     def asTuple(self):
         return (self.x, self.y, self.z, self.a, self.b, self.c )
 
     def asCTuple(self):
         return (ctypes.c_float*6)(*self.asTuple())
 
-class vec3:
+class _vec3:
     def __init__(self, *args):
         if len(args) == 3:
             self.x = float(args[0])
@@ -343,6 +348,9 @@ class vec3:
     def __str__(self):
         return "vec3( {} , {} , {} )".format(self.x,self.y,self.z)
 
+    def __repr__(self):
+        return self.__str__()
+
     def asTuple(self):
         return (self.x,self.y,self.z)
 
@@ -402,9 +410,9 @@ def _no_pyogg_error(*args, **kw):
 class Listener:
     def __init__(self):
         self.gain = 0.
-        self.position = vec3(0.,0.,0.)
-        self.orientation = vec6(0.,0.,-1.,0.,1.,0.)
-        self.velocity = vec3(0.,0.,0.)
+        self.position = _vec3(0.,0.,0.)
+        self.orientation = _vec6(0.,0.,-1.,0.,1.,0.)
+        self.velocity = _vec3(0.,0.,0.)
 
     def _setPos(self):
         _check()
@@ -431,28 +439,28 @@ class Listener:
 
     def move_to(self, v):
         try:
-            self.position = vec3(v)
+            self.position = _vec3(v)
             self._setPos()
         except:
             raise OalError("Unsupported argument for move_to: {}".format(v))
 
     def set_position(self,v):
         try:
-            self.position = vec3(v)
+            self.position = _vec3(v)
             self._setPos()
         except:
             raise OalError("Unsupported argument for set_position: {}".format(v))
 
     def set_orientation(self,v):
         try:
-            self.orientation = vec6(v)
+            self.orientation = _vec6(v)
             self._setOrientation()
         except:
             raise OalError("Unsupported argument for set_orientation: {}".format(v))
 
     def set_velocity(self, v):
         try:
-            self.velocity = vec3(v)
+            self.velocity = _vec3(v)
             self._setVelocity()
         except:
             raise OalError("Unsupported argument for set_velocity: {}".format(v))
@@ -464,7 +472,7 @@ class Listener:
         except:
             raise OalError("Unsupported argument for set_gain: {}".format(value))
 
-_listener = Listener()
+_itemsener = Listener()
 
 def _to_int(i):
     if type(i) == int:
@@ -486,17 +494,26 @@ def _channels_to_al(ch):
 
 class Buffer:
     def __init__(self, *args):
+        global _items
         _check()
+        self._exitsts = True
         self.id = ctypes.c_uint()
         alGenBuffers(1, ctypes.pointer(self.id))
 
         self.fill(*args)
+
+        _items.append(self)
 
     def geti(self):
         return ctypes.c_int(self.id.value)
 
     def getui(self):
         return self.id
+
+    def destroy(self):
+        if self._exitsts:
+            alDeleteBuffers(1, ctypes.pointer(self.id))
+            self._exitsts = False
 
     def fill(self, *args):
         if PYOGG_AVAIL and len(args) == 1:
@@ -507,9 +524,12 @@ class Buffer:
 
 class Source:
     def __init__(self, buffer_ = None):
+        global _items
         _check()
         self.id = ctypes.c_uint()
         alGenSources(1, ctypes.pointer(self.id))
+
+        self._exitsts = True
 
         self.pitch = 1.
 
@@ -531,13 +551,13 @@ class Source:
 
         self.cone_outer_angle = 360.
 
-        self.position = vec3(0.,0.,0.)
+        self.position = _vec3(0.,0.,0.)
 
-        self.velocity = vec3(0.,0.,0.)
+        self.velocity = _vec3(0.,0.,0.)
 
         self.looping = False
 
-        self.direction = vec3(0.,0.,0.)
+        self.direction = _vec3(0.,0.,0.)
 
         self.source_relative = False
 
@@ -549,6 +569,115 @@ class Source:
 
         if buffer_:
             self.set_buffer(buffer_)
+
+        _items.append(self)
+
+    def _set(self, enum, value):
+        if type(value) in (float,):
+            alSourcef(self.id, ctypes.c_int(enum), ctypes.c_float(value))
+        elif type(value) in (int, bool):
+            alSourcei(self.id, ctypes.c_int(enum), ctypes.c_int(value))
+        elif type(value) in (_vec3, _vec6):
+            alSourcefv(self.id, ctypes.c_int(enum), value.asCTuple())
+        elif type(value) in (ctypes.c_float*3, ctypes.c_float*6):
+            alSourcefv(self.id,ctypes.c_int(enum), value)
+        elif type(value) in (tuple, list):
+            if len(value) == 3:
+                alSourcefv(self.id, ctypes.c_int(enum), _vec3(value).asCTuple())
+            elif len(value) == 6:
+                alSourcefv(self.id, ctypes.c_int(enum), _vec6(value).asCTuple())
+
+    def _to_val(self,value):
+        if type(value) in (float, bool, _vec3, _vec6):
+            return value
+        elif type(value) in (int,):
+            return float(value)
+        elif type(value) in (ctypes.c_float*3,):
+            return _vec3(value)
+        elif type(value) in (ctypes.c_float*6,):
+            return _vec6(value)
+        elif type(value) in (tuple, list):
+            if len(value) == 3:
+                return _vec3(value)
+            elif len(value) == 6:
+                return _vec6(value)
+
+    def destroy(self):
+        try:
+            self.buffer.destroy()
+        except:
+            pass
+        if self._exitsts:
+            alDeleteSources(1, ctypes.pointer(self.id))
+            self._exitsts = False
+
+    def set_pitch(self, value):
+        self._set(AL_PITCH, value)
+        self.pitch = self._to_val(value)
+
+    def set_gain(self, value):
+        self._set(AL_GAIN, value)
+        self.gain = self._to_val(value)
+
+    def set_max_distance(self, value):
+        self._set(AL_MAX_DISTANCE, value)
+        self.max_distance = self._to_val(value)
+
+    def set_rolloff_factor(self, value):
+        self._set(AL_ROLLOFF_FACTOR, value)
+        self.rolloff_factor = self._to_val(value)
+
+    def set_reference_distance(self, value):
+        self._set(AL_REFERENCE_DISTANCE, value)
+        self.reference_distance = self._to_val(value)
+
+    def set_min_gain(self,value):
+        self._set(AL_MIN_GAIN, )
+        self.min_gain = self._to_val(value)
+
+    def set_cone_outer_gain(self, value):
+        self._set(AL_CONE_OUTER_GAIN, value)
+        self.cone_outer_gain = self._to_val(value)
+
+    def set_cone_inner_angle(self, value):
+        self._set(AL_CONE_INNER_ANGLE, value)
+        self.cone_inner_angle = self._to_val(value)
+
+    def set_cone_outer_angle(self, value):
+        self._set(AL_CONE_OUTER_ANGLE, value)
+        self.cone_outer_angle = self._to_val(value)
+
+    def set_position(self, value):
+        self._set(AL_POSITION, value)
+        self.position = self._to_val(value)
+
+    def set_velocity(self, value):
+        self._set(AL_VELOCITY, value)
+        self.velocity = self._to_val(value)
+
+    def set_looping(self, value):
+        self._set(AL_LOOPING, value)
+        self.looping = self._to_val(value)
+
+    def set_direction(self, value):
+        self._set(AL_DIRECTION, value)
+        self.direction = self._to_val(value)
+
+    def set_source_relative(self, value):
+        self._set(AL_SOURCE_RELATIVE, value)
+        self.source_relative = self._to_val(value)
+
+    def set_source_type(self, value):
+        self._set(AL_SOURCE_TYPE, value)
+        self.source_type = self._to_val(value)
+
+    def set_buffers_queued(self, value):
+        self._set(AL_BUFFERS_QUEUED, value)
+        self.buffers_queued = self._to_val(value)
+
+    def set_buffers_processed(self, value):
+        self._set(AL_BUFFERS_PROCESSED, value)
+        self.buffers_processed = self._to_val(value)
 
     def geti(self):
         return ctypes.c_int(self.id.value)
@@ -575,8 +704,19 @@ class Source:
         
 
 def oalGetListener():
-    global _listener
-    return _listener
+    global _itemsener
+    return _itemsener
+
+def oalQuit():
+    global _oaldevice, _oalcontext, _items
+    for item in _items:
+        item.destroy()
+    if _oalcontext:
+        alcDestroyContext(_oalcontext)
+    if _oaldevice:
+        alcCloseDevice(_oaldevice)
+    _oalcontext = _oaldevice = None
+    _items = []
 
 if PYOGG_AVAIL:
     def oalLoadFile(path, ext_hint=None):
