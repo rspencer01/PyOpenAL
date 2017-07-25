@@ -14,9 +14,13 @@ except ImportError:
     PYOGG_AVAIL = False
 
 try:
-    OAL_DONT_AUTO_INIT
+    long
 except:
-    OAL_DONT_AUTO_INIT = False
+    long = int
+
+OAL_DONT_AUTO_INIT = False
+
+OAL_STREAM_BUFFER_COUNT = 2
 
 __name__ = "python-openal"
 
@@ -40,7 +44,7 @@ class _vec6:
             self.b = float(args[4])
             self.c = float(args[5])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
             self.x = args[0][0]
             self.y = args[0][1]
             self.z = args[0][2]
@@ -71,7 +75,7 @@ class _vec6:
             b += float(args[4])
             c += float(args[5])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
             x += args[0][0]
             y += args[0][1]
             z += args[0][2]
@@ -108,7 +112,7 @@ class _vec6:
             b *= float(args[4])
             c *= float(args[5])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
             x *= args[0][0]
             y *= args[0][1]
             z *= args[0][2]
@@ -145,7 +149,7 @@ class _vec6:
             b -= float(args[4])
             c -= float(args[5])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
             x -= args[0][0]
             y -= args[0][1]
             z -= args[0][2]
@@ -182,7 +186,7 @@ class _vec6:
             b /= float(args[4])
             c /= float(args[5])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
             x /= args[0][0]
             y /= args[0][1]
             z /= args[0][2]
@@ -235,7 +239,7 @@ class _vec3:
             self.y = float(args[1])
             self.z = float(args[2])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
             self.x = args[0][0]
             self.y = args[0][1]
             self.z = args[0][2]
@@ -254,7 +258,7 @@ class _vec3:
             y += float(args[1])
             z += float(args[2])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
             x += args[0][0]
             y += args[0][1]
             z += args[0][2]
@@ -276,7 +280,7 @@ class _vec3:
             y *= float(args[1])
             z *= float(args[2])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
             x *= args[0][0]
             y *= args[0][1]
             z *= args[0][2]
@@ -298,7 +302,7 @@ class _vec3:
             y -= float(args[1])
             z -= float(args[2])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
             x -= args[0][0]
             y -= args[0][1]
             z -= args[0][2]
@@ -320,7 +324,7 @@ class _vec3:
             y /= float(args[1])
             z /= float(args[2])
             
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple):
+        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
             x /= args[0][0]
             y /= args[0][1]
             z /= args[0][2]
@@ -361,18 +365,18 @@ _oaldevice = None
 
 _oalcontext = None
 
-def oalInit():
+def oalInit(device_specifier=None, context_attr_list=None):
     """Sets up OpenAL device and context (if not yet created)"""
     global _oaldevice, _oalcontext
     
     if not _oaldevice:
-        _oaldevice = alcOpenDevice(None)
+        _oaldevice = alcOpenDevice(device_specifier)
         
     if not _oaldevice:
         raise OalError("Default OpenAL device couldn't be opened")
 
     if not _oalcontext:
-        _oalcontext = alcCreateContext(_oaldevice, None)
+        _oalcontext = alcCreateContext(_oaldevice, context_attr_list)
         
     if not _oalcontext:
         raise OalError("OpenAL context couldn't be created")
@@ -472,19 +476,25 @@ class Listener:
         except:
             raise OalError("Unsupported argument for set_gain: {}".format(value))
 
-_itemsener = Listener()
+_listener = Listener()
 
 def _to_int(i):
-    if type(i) == int:
+    if type(i) in (int, long):
         return i
     elif type(i) in (ctypes.c_int, ctypes.c_char):
         return i.value
 
 def _to_c_int(i):
-    if type(i) == int:
+    if type(i) in (int, long):
         return ctypes.c_int(i)
     elif type(i) in (ctypes.c_uint, ctypes.c_char):
         return ctypes.c_int(i.value)
+
+def _to_c_uint(i):
+    if type(i) in (int, long):
+        return ctypes.c_uint(i)
+    elif type(i) in (ctypes.c_int, ctypes.c_char):
+        return ctypes.c_uint(i.value)
 
 def _channels_to_al(ch):
     if ch == 1:
@@ -494,15 +504,12 @@ def _channels_to_al(ch):
 
 class Buffer:
     def __init__(self, *args):
-        global _items
         _check()
         self._exitsts = True
         self.id = ctypes.c_uint()
         alGenBuffers(1, ctypes.pointer(self.id))
 
         self.fill(*args)
-
-        _items.append(self)
 
     def geti(self):
         return ctypes.c_int(self.id.value)
@@ -521,6 +528,38 @@ class Buffer:
             alBufferData(self.getui(), _channels_to_al(file_.channels), file_.buffer, _to_c_int(file_.buffer_length), _to_c_int(file_.frequency))
         else:
             alBufferData(self.getui(), _to_int(args[0]), args[1], _to_int(args[2]), _to_int(args[3]))
+
+class StreamBuffer:
+    def __init__(self, stream, count):
+        self.buffer_ids = (ctypes.c_uint * count)()
+
+        alGenBuffers(count, ctypes.cast(ctypes.pointer(self.buffer_ids), ctypes.POINTER(ctypes.c_uint)))
+
+        self.stream = stream
+
+        self._count = count
+
+        self._exitsts = True
+
+        for id_ in range(count):
+            self.fill_buffer(id_)
+
+        self.last_buffer = count - 1
+
+    def destroy(self):
+        if self._exitsts:
+            alDeleteBuffers(self._count, ctypes.cast(ctypes.pointer(self.buffer_ids), ctypes.POINTER(ctypes.c_uint)))
+            self._exitsts = False
+
+    def fill_buffer(self, id_):
+        if self._exitsts:
+            buffer_info = self.stream.get_buffer()
+            if buffer_info:
+                buffer_, buffer_size = buffer_info
+                alBufferData(_to_c_uint(self.buffer_ids[id_]),  _channels_to_al(self.stream.channels), buffer_, _to_c_int(buffer_size), _to_c_int(self.stream.frequency))
+                return True
+            else:
+                return False
 
 class Source:
     def __init__(self, buffer_ = None):
@@ -563,10 +602,6 @@ class Source:
 
         self.source_type = AL_UNDETERMINED
 
-        self.buffers_queued = None
-
-        self.buffers_processed = None
-
         if buffer_:
             self.set_buffer(buffer_)
 
@@ -603,6 +638,8 @@ class Source:
                 return _vec6(value)
 
     def destroy(self):
+        if self.get_state() == AL_PLAYING:
+            self.stop()
         try:
             self.buffer.destroy()
         except:
@@ -634,6 +671,10 @@ class Source:
     def set_min_gain(self,value):
         self._set(AL_MIN_GAIN, )
         self.min_gain = self._to_val(value)
+
+    def set_max_gain(self,value):
+        self._set(AL_MAX_GAIN, )
+        self.max_gain = self._to_val(value)
 
     def set_cone_outer_gain(self, value):
         self._set(AL_CONE_OUTER_GAIN, value)
@@ -671,14 +712,6 @@ class Source:
         self._set(AL_SOURCE_TYPE, value)
         self.source_type = self._to_val(value)
 
-    def set_buffers_queued(self, value):
-        self._set(AL_BUFFERS_QUEUED, value)
-        self.buffers_queued = self._to_val(value)
-
-    def set_buffers_processed(self, value):
-        self._set(AL_BUFFERS_PROCESSED, value)
-        self.buffers_processed = self._to_val(value)
-
     def geti(self):
         return ctypes.c_int(self.id.value)
 
@@ -689,6 +722,11 @@ class Source:
         self.buffer = buffer_
 
         alSourcei(self.id, AL_BUFFER, self.buffer.geti())
+
+    def get_state(self):
+        value = ctypes.c_int()
+        alGetSourcei(self.id, AL_SOURCE_STATE, value)
+        return value.value
 
     def play(self):
         alSourcePlay(self.id)
@@ -701,11 +739,98 @@ class Source:
 
     def rewind(self):
         alSourceRewind(self.id)
-        
+
+class SourceStream(Source):
+    def __init__(self, stream):
+        global _items
+        _check()
+        self.id = ctypes.c_uint()
+        alGenSources(1, ctypes.pointer(self.id))
+
+        self._exitsts = True
+
+        self.pitch = 1.
+
+        self.gain = 1.
+
+        self.max_distance = MAX_FLOAT
+
+        self.rolloff_factor = 1.
+
+        self.reference_distance = 1.
+
+        self.min_gain = 0.
+
+        self.max_gain = 1.
+
+        self.cone_outer_gain = 0.
+
+        self.cone_inner_angle = 360.
+
+        self.cone_outer_angle = 360.
+
+        self.position = _vec3(0.,0.,0.)
+
+        self.velocity = _vec3(0.,0.,0.)
+
+        self.looping = False
+
+        self.direction = _vec3(0.,0.,0.)
+
+        self.source_relative = False
+
+        self.source_type = AL_UNDETERMINED
+
+        self.buffer = StreamBuffer(stream, OAL_STREAM_BUFFER_COUNT)
+
+        self._continue = True
+
+        alSourceQueueBuffers(self.id, OAL_STREAM_BUFFER_COUNT, self.buffer.buffer_ids)
+
+    def update(self):
+        if self.get_state() != AL_PLAYING:
+            self._continue = False
+        if self._continue:
+            buffers_processed = ctypes.c_int()
+
+            alGetSourcei(self.id, AL_BUFFERS_PROCESSED, ctypes.pointer(buffers_processed))
+
+            for buf_id in range(buffers_processed.value):
+                unqueue = self.buffer.last_buffer + 1
+                if unqueue >= OAL_STREAM_BUFFER_COUNT:
+                    unqueue = 0
+
+                alSourceUnqueueBuffers(self.id, 1, ctypes.pointer(_to_c_uint(self.buffer.buffer_ids[unqueue])))
+
+                buffer_filled = self.buffer.fill_buffer(unqueue)
+
+                if buffer_filled:
+                    alSourceQueueBuffers(self.id, 1, ctypes.pointer(_to_c_uint(self.buffer.buffer_ids[unqueue])))
+
+                    self.buffer.last_buffer += 1
+
+                    if self.buffer.last_buffer >= OAL_STREAM_BUFFER_COUNT:
+                        self.buffer.last_buffer = 0
+                else:
+                    self._continue = False
+
+        else:
+            alGetSourcei(self.id, AL_BUFFERS_QUEUED, ctypes.pointer(buffers_processed))
+
+            for buf_id in range(buffers_processed.value):
+                unqueue = self.buffer.last_buffer + 1
+                if unqueue >= OAL_STREAM_BUFFER_COUNT:
+                    unqueue = 0
+
+                alSourceUnqueueBuffers(self.id, 1, ctypes.pointer(_to_c_uint(self.buffer.buffer_ids[unqueue])))
+
+                self.buffer.last_buffer += 1
+                
+        return self._continue
 
 def oalGetListener():
-    global _itemsener
-    return _itemsener
+    global _listener
+    return _listener
 
 def oalQuit():
     global _oaldevice, _oalcontext, _items
@@ -741,5 +866,32 @@ if PYOGG_AVAIL:
 
         return source
 
+    def oalStreamFile(path, ext_hint=None):
+        """oalStreamFile(filepath [, extension_hint]) -> SourceStream
+        loads an ogg file to a source-stream and returns it.
+        You can use ext_hint to suggest the file type,
+        in case the file extension is not ogg, vorbis or opus"""
+        _check()
+        if not ext_hint:
+            ext_hint = os.path.splitext(path)[1]
+        ext_hint = ext_hint.lower()
+
+        if ext_hint in ("ogg", "vorbis", ".ogg", ".vorbis"):
+            stream = VorbisFileStream(path)
+        elif ext_hint in ("opus", ".opus"):
+            stream = OpusFileStream(path)
+        else:
+            _err("Unsupported file extension {}. You might want to consider using the ext_hint parameter to pass the file format".format(ext_hint))
+
+        return SourceStream(stream)
 else:
     oalLoadFile = _no_pyogg_error
+    oalStreamFile = _no_pyogg_error
+
+def oalSetAutoInit(val):
+    global OAL_STREAM_BUFFER_COUNT
+    OAL_STREAM_BUFFER_COUNT = val
+
+def oalSetStreamBufferCount(val):
+    global OAL_STREAM_BUFFER_COUNT
+    OAL_STREAM_BUFFER_COUNT = val
