@@ -34,6 +34,7 @@ def _err(msg):
 
 class _vec6:
     def __init__(self, *args):
+        self.__truediv__ = self.__div__
         if len(args) == 6:
             self.x = float(args[0])
             self.y = float(args[1])
@@ -232,6 +233,7 @@ class _vec6:
 
 class _vec3:
     def __init__(self, *args):
+        self.__truediv__ = self.__div__
         if len(args) == 3:
             self.x = float(args[0])
             self.y = float(args[1])
@@ -600,6 +602,8 @@ class Source:
 
         self.source_type = AL_UNDETERMINED
 
+        self._state = AL_INITIAL
+
         if buffer_:
             self.set_buffer(buffer_)
 
@@ -728,12 +732,15 @@ class Source:
 
     def play(self):
         alSourcePlay(self.id)
+        self._state = AL_PLAYING
 
     def stop(self):
         alSourceStop(self.id)
+        self._state = AL_STOPPED
 
     def pause(self):
         alSourcePause(self.id)
+        self._state = AL_PAUSED
 
     def rewind(self):
         alSourceRewind(self.id)
@@ -786,7 +793,9 @@ class SourceStream(Source):
         alSourceQueueBuffers(self.id, OAL_STREAM_BUFFER_COUNT, self.buffer.buffer_ids)
 
     def update(self):
-        if self.get_state() != AL_PLAYING:
+        if self._state != AL_PLAYING:
+            return
+        if self.get_state() == AL_STOPPED:
             self._continue = False
         if self._continue:
             buffers_processed = ctypes.c_int()
@@ -813,6 +822,7 @@ class SourceStream(Source):
                     self._continue = False
 
         else:
+            buffers_processed = ctypes.c_int()
             alGetSourcei(self.id, AL_BUFFERS_QUEUED, ctypes.pointer(buffers_processed))
 
             for buf_id in range(buffers_processed.value):
