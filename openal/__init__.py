@@ -22,8 +22,6 @@ OAL_DONT_AUTO_INIT = False
 
 OAL_STREAM_BUFFER_COUNT = 2
 
-__name__ = "python-openal"
-
 MAX_FLOAT = sys.float_info.max
 
 _items = []
@@ -399,7 +397,7 @@ def oalGetInit():
     return bool(_oaldevice) and bool(_oalcontext)
 
 def _nlError():
-    _err("{} wasn't loaded yet, please run oalInit() first".format(__name__))
+    _err("PyOpenAL wasn't loaded yet, please run oalInit() first")
 
 def _check():
     if not oalGetInit():
