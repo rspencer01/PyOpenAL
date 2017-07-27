@@ -2,8 +2,13 @@
 
 PyOpenAL provides OpenAL bindings for python as well as an interface to them.
 
-It even provides a simple way to open OGG Vorbis and OGG Opus files, if used together with [PyOgg](https://github.com/Zuzu-Typ/PyOgg).
+It also provides a simple way to play WAVE and even OGG Vorbis and OGG Opus files, the latter two if used together with [PyOgg](https://github.com/Zuzu-Typ/PyOgg).
 
+You can install it using the PyPI:
+
+	pip install PyOpenAL
+
+	
 PyOpenAL requires a dynamic OpenAL library (OpenAL32.dll). 
 You can use the [official OpenAL library](http://www.openal.org/) (deprecated) or the much better sounding [OpenAL Soft library](http://kcat.strangesoft.net/openal.html), which is still actively developed (or any other OpenAL compatible library).
 
@@ -13,8 +18,30 @@ Don't worry though, PyOpenAL can be used without the need to do that.
 
 I removed the support for ALUT, because it is basically impossible to build nowadays. If you want ALUT support, please use the original [PyOpenAL from forrestv](https://github.com/forrestv/PyOpenAL)
 
-### Examples (with PyOgg)
-##### Playing a file
+### Examples
+##### Playing a wave file
+
+	# import PyOpenAL (will require OpenAL32.dll)
+	from openal import * 
+	
+	# import the time module, for sleeping during playback
+	import time
+
+	# open our wave file
+	source = oalLoadFile("test.wav")
+
+	# and start playback
+	source.play()
+
+	# check if the file is still playing
+	while source.get_state() == AL_PLAYING:
+		# wait until the file is done playing
+		time.sleep(1)
+		
+	# release resources (don't forget this)
+	oalQuit()
+	
+##### Playing an OGG Opus file (with PyOgg)
 
 	from openal import * 
 	
@@ -22,24 +49,23 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	# PyOpenAL does that for us (if it can find it)
 	
 	import time
-
-	# open "test.opus"
+	
 	source = oalLoadFile("test.opus")
 
 	source.play()
 
 	while source.get_state() == AL_PLAYING:
-		# wait until the file is done playing
 		time.sleep(1)
 		
-	# release resources (don't forget this)
+	# remember, don't forget to quit
 	oalQuit()
 		
 ##### Streaming a file
 
 	from openal import *
 
-	# it is not required to do this, it's just to show off it exists
+	# here we define how much data is supposed to be held at a time (for Vorbis and Opus files), in how many buffers
+	# this is set automatically, but you can set it yourself, if you can't update the stream frequently enough
 	pyoggSetStreamBufferSize(4096*4)
 	oalSetStreamBufferCount(4)
 
@@ -49,6 +75,10 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 
 	while sourceStream.get_state() == AL_PLAYING:
 		# do stuff
+		[...]
+		
+		# update the stream (load new data)
+		# if you don't do this repeatedly, the stream will suffocate
 		sourceStream.update()
 		
 	oalQuit()
@@ -95,12 +125,12 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 		# exits out of OpenAL and destroys all existing Sources and Buffers
 		
 	<method> oalLoadFile(path, ext_hint = None) -> Source
-		# loads an Ogg Vorbis / Opus file to a Source object
+		# loads a WAVE / Ogg Vorbis / Ogg Opus file to a Source object
 			<str> path # path to the file (relative or absolute)
-			<str> ext_hint # if the filetype is not ogg, vorbis or opus, you should supply a hint to the extension
+			<str> ext_hint # if the filetype is not wav, wave, ogg, vorbis or opus, you should supply a hint to the extension
 			
 	<method> oalStreamFile(path, ext_hint = None) -> SourceStream
-		# loads an Ogg Vorbis / Opus file to a SourceStream object, that streams the data
+		# loads a WAVE /  Ogg Vorbis / Ogg Opus file to a SourceStream object, that streams the data
 		# you should use this instead of Source for Soundtracks or other long tracks (as it uses less memory)
 		# you will have to update it frequently to avoid suffocation of the stream
 		# you can neither rewind nor loop a SourceStream (currently)
@@ -139,29 +169,6 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	<method> openal.oalGetListener() -> Listener
 		# returns PyOpenAL's Listener
 		
-	<class> openal.Buffer(*args)
-		# class for managing OpenAL buffers
-			<PYOGG-File or tuple or list> args # what to fill the buffer with (either y PyOgg file or a tuple / list with [format, data, length, frequency])
-		
-		<method> Buffer.fill(*args) -> None
-			# fill the buffer
-				<PYOGG-File or tuple or list> args # what to fill the buffer with (either y PyOgg file or a tuple / list with [format, data, length, frequency])
-			
-		<method> Buffer.destroy() -> None
-			# destroy this buffer
-			
-	<class> openal.StreamBuffer(stream, count)
-		# class for managing OpenAL buffers for audio streaming
-			<PYOGG-Stream> stream # from where to get the data
-			<int> count # how many buffers to create (usually OAL_STREAM_BUFFER_COUNT, which is 2 initially)
-		
-		<method> Buffer.fill_buffer(id_) -> None
-			# fill the buffer
-				<int> id_ # load some data into this buffer
-			
-		<method> Buffer.destroy() -> None
-			# destroy this streambuffer
-			
 	<class> openal.Source(buffer_ = None)
 		# class for managing a source
 			<Buffer> buffer_ # where this source finds it's data
@@ -302,6 +309,29 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 			# load more data to play (if necessary). 
 			# if you don't call this frequently, the source will stop playing after it reaches the last buffer
 			# in that case you should consider increasing the buffer size or amount using oalSetStreamBufferCount or pyoggSetStreamBufferSize
+		
+	<class> openal.Buffer(*args)
+		# class for managing OpenAL buffers
+			<File or tuple or list> args # what to fill the buffer with (either y PyOgg file or a tuple / list with [format, data, length, frequency])
+		
+		<method> Buffer.fill(*args) -> None
+			# fill the buffer
+				<File or tuple or list> args # what to fill the buffer with (either y PyOgg file or a tuple / list with [format, data, length, frequency])
+			
+		<method> Buffer.destroy() -> None
+			# destroy this buffer
+			
+	<class> openal.StreamBuffer(stream, count)
+		# class for managing OpenAL buffers for audio streaming
+			<PYOGG-Stream> stream # from where to get the data
+			<int> count # how many buffers to create (usually OAL_STREAM_BUFFER_COUNT, which is 2 initially)
+		
+		<method> Buffer.fill_buffer(id_) -> None
+			# fill the buffer
+				<int> id_ # load some data into this buffer
+			
+		<method> Buffer.destroy() -> None
+			# destroy this streambuffer
 			
 		# The other methods and variables are the same as in Source 
 		# (note that you can't loop, because the file can be read only once (by now))

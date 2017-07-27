@@ -14,6 +14,12 @@ except ImportError:
     PYOGG_AVAIL = False
 
 try:
+    import wave
+    WAVE_AVAIL = True
+except:
+    WAVE_AVAIL = False
+
+try:
     long
 except:
     long = int
@@ -21,6 +27,8 @@ except:
 OAL_DONT_AUTO_INIT = False
 
 OAL_STREAM_BUFFER_COUNT = 2
+
+WAVE_STREAM_BUFFER_SIZE = 4096*2
 
 MAX_FLOAT = sys.float_info.max
 
@@ -411,6 +419,70 @@ def _check():
 def _no_pyogg_error(*args, **kw):
     _err("You have to set up pyogg in order to use this function. Go to https://github.com/Zuzu-Typ/PyOgg to get it")
 
+if WAVE_AVAIL:
+    class WaveFile:
+        def __init__(self,path):
+            self.file_ = wave.open(path)
+
+            self.channels = self.file_.getnchannels()
+
+            self.frequency = self.file_.getframerate()
+            
+            self.buffer = b""
+
+            change = 1
+
+            while change:
+                new_buf = self.file_.readframes(4096*8)
+                change = len(new_buf)
+                self.buffer += new_buf
+
+            self.buffer_length = len(self.buffer)
+
+            self.file_.close()
+
+    class WaveFileStream:
+        def __init__(self, path):
+            self.file_ = wave.open(path)
+
+            self.channels = self.file_.getnchannels()
+
+            self.frequency = self.file_.getframerate()
+
+            self.exists = True
+
+        def clean_up(self):
+            self.file_.close()
+
+            self.exists = False
+
+        def get_buffer(self):
+            """get_buffer() -> bytesBuffer, bufferLength"""
+            if not self.exists:
+                return None
+            buffer = b""
+            
+            while True:
+                new_bytes = self.file_.readframes(WAVE_STREAM_BUFFER_SIZE*self.channels)
+                
+                if buffer:
+                    buffer += new_bytes
+                else:
+                    buffer = new_bytes
+
+                if len(new_bytes) == 0 or len(buffer) >= WAVE_STREAM_BUFFER_SIZE*self.channels:
+                    break
+
+            if len(buffer) == 0:
+                self.clean_up()
+                return(None)
+
+            return(buffer, len(buffer))
+else:
+    class WaveFile:
+        def __init__(*args, **kw):
+            _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
+        
 class Listener:
     def __init__(self):
         self.gain = 0.
@@ -523,7 +595,7 @@ class Buffer:
             self._exitsts = False
 
     def fill(self, *args):
-        if PYOGG_AVAIL and len(args) == 1:
+        if len(args) == 1:
             file_ = args[0]
             alBufferData(self.getui(), _channels_to_al(file_.channels), file_.buffer, _to_c_int(file_.buffer_length), _to_c_int(file_.frequency))
         else:
@@ -829,9 +901,10 @@ class SourceStream(Source):
                 unqueue = self.buffer.last_buffer + 1
                 if unqueue >= OAL_STREAM_BUFFER_COUNT:
                     unqueue = 0
-
-                alSourceUnqueueBuffers(self.id, 1, ctypes.pointer(_to_c_uint(self.buffer.buffer_ids[unqueue])))
-
+                try:
+                    alSourceUnqueueBuffers(self.id, 1, ctypes.pointer(_to_c_uint(self.buffer.buffer_ids[unqueue])))
+                except:
+                    pass
                 self.buffer.last_buffer += 1
                 
         return self._continue
@@ -851,7 +924,7 @@ def oalQuit():
     _oalcontext = _oaldevice = None
     _items = []
 
-if PYOGG_AVAIL:
+if PYOGG_AVAIL or WAVE_AVAIL:
     def oalLoadFile(path, ext_hint=None):
         """oalLoadFile(filepath [, extension_hint]) -> Source
         loads an ogg file to a source and returns it.
@@ -862,9 +935,20 @@ if PYOGG_AVAIL:
             ext_hint = os.path.splitext(path)[1]
         ext_hint = ext_hint.lower()
         if ext_hint in ("ogg", "vorbis", ".ogg", ".vorbis"):
+            if not PYOGG_AVAIL:
+                _no_pyogg_error()
+                return
             file_ = VorbisFile(path)
         elif ext_hint in ("opus", ".opus"):
+            if not PYOGG_AVAIL:
+                _no_pyogg_error()
+                return
             file_ = OpusFile(path)
+        elif ext_hint in ("wav", ".wav", ".wave", "wave"):
+            if not WAVE_AVAIL:
+                _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
+                return
+            file_ = WaveFile(path)
         else:
             _err("Unsupported file extension {}. You might want to consider using the ext_hint parameter to pass the file format".format(ext_hint))
             
@@ -885,9 +969,20 @@ if PYOGG_AVAIL:
         ext_hint = ext_hint.lower()
 
         if ext_hint in ("ogg", "vorbis", ".ogg", ".vorbis"):
+            if not PYOGG_AVAIL:
+                _no_pyogg_error()
+                return
             stream = VorbisFileStream(path)
         elif ext_hint in ("opus", ".opus"):
+            if not PYOGG_AVAIL:
+                _no_pyogg_error()
+                return
             stream = OpusFileStream(path)
+        elif ext_hint in ("wav", ".wav", "wave", ".wave"):
+            if not WAVE_AVAIL:
+                _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
+                return
+            stream = WaveFileStream(path)
         else:
             _err("Unsupported file extension {}. You might want to consider using the ext_hint parameter to pass the file format".format(ext_hint))
 
@@ -903,3 +998,7 @@ def oalSetAutoInit(val):
 def oalSetStreamBufferCount(val):
     global OAL_STREAM_BUFFER_COUNT
     OAL_STREAM_BUFFER_COUNT = val
+
+def waveSetStreamBufferSize(val):
+    global WAVE_STREAM_BUFFER_SIZE
+    WAVE_STREAM_BUFFER_SIZE = val
