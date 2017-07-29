@@ -28,7 +28,7 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	import time
 
 	# open our wave file
-	source = oalLoadFile("test.wav")
+	source = oalOpen("test.wav")
 
 	# and start playback
 	source.play()
@@ -50,7 +50,7 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	
 	import time
 	
-	source = oalLoadFile("test.opus")
+	source = oalOpen("test.opus")
 
 	source.play()
 
@@ -69,7 +69,7 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	pyoggSetStreamBufferSize(4096*4)
 	oalSetStreamBufferCount(4)
 
-	sourceStream = oalStreamFile("test.ogg")
+	sourceStream = oalStream("test.ogg")
 
 	sourceStream.play()
 
@@ -114,12 +114,12 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 	<method> oalQuit() -> None
 		# exits out of OpenAL and destroys all existing Sources and Buffers
 		
-	<method> oalLoadFile(path, ext_hint = None) -> Source
+	<method> oalOpen(path, ext_hint = None) -> Source
 		# loads a WAVE / Ogg Vorbis / Ogg Opus file to a Source object
 			<str> path # path to the file (relative or absolute)
 			<str> ext_hint # if the filetype is not wav, wave, ogg, vorbis or opus, you should supply a hint to the extension
 			
-	<method> oalStreamFile(path, ext_hint = None) -> SourceStream
+	<method> oalStream(path, ext_hint = None) -> SourceStream
 		# loads a WAVE /  Ogg Vorbis / Ogg Opus file to a SourceStream object, that streams the data
 		# you should use this instead of Source for Soundtracks or other long tracks (as it uses less memory)
 		# you will have to update it frequently to avoid suffocation of the stream
