@@ -1172,8 +1172,8 @@ if PYOGG_AVAIL or WAVE_AVAIL:
 
         return SourceStream(stream)
 else:
-    oalLoadFile = _no_pyogg_error
-    oalStreamFile = _no_pyogg_error
+    oalOpen = _no_pyogg_error
+    oalStream = _no_pyogg_error
 
 def _format_enum(enum):
     if len(enum) > 1:
