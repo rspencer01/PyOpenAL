@@ -30,12 +30,13 @@ ALC_CAPTURE_DEVICE_SPECIFIER = 0x310
 ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311
 ALC_CAPTURE_SAMPLES = 0x312
 
-errors = {}
+alc_enums = {}
 local_items = list(locals().items())
 for k, v in local_items:
-    if not isinstance(v, int) or not v: continue
-    assert v not in errors
-    errors[v] = k.replace('_', ' ').lower()
+    if type(v) != int: continue
+    if not v in alc_enums:
+        alc_enums[v] = []
+    alc_enums[v].append(k)
 
 class ALCError(Exception):
     pass
@@ -43,7 +44,7 @@ class ALCError(Exception):
 def alc_check_error(result, func, arguments):
     err = alcGetError(0)
     if err:
-        raise ALCError(errors[err])
+        raise ALCError(alc_enums[err][0])
     return result
 
 alcCreateContext = lib.alcCreateContext

@@ -72,12 +72,13 @@ AL_LINEAR_DISTANCE_CLAMPED = 0xD004
 AL_EXPONENT_DISTANCE = 0xD005
 AL_EXPONENT_DISTANCE_CLAMPED = 0xD006
 
-errors = {}
+al_enums = {}
 local_items = list(locals().items())
 for k, v in local_items:
-    if not isinstance(v, int) or not v: continue
-    assert v not in errors
-    errors[v] = k.replace('_', ' ').lower()
+    if type(v) != int: continue
+    if not v in al_enums:
+        al_enums[v] = []
+    al_enums[v].append(k)
 
 class ALError(Exception):
     pass
@@ -89,7 +90,7 @@ alGetError.restype = ctypes.c_int
 def al_check_error(result, func, arguments):
     err = alGetError()
     if err:
-        raise ALError(errors[err])
+        raise ALError(al_enums[err][0])
     return result
 
 alEnable = lib.alEnable

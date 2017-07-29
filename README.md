@@ -110,16 +110,6 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 		
 	<method> oalGetInit() -> <bool> initialized
 		# finds out wether or not PyOpenAL is initialized
-		
-	<method> oalGetContext() -> <int> context
-		# returns the context used by PyOpenAL
-		
-	<method> oalGetDevice() -> <int> device
-		# returns the device used by PyOpenAL
-		
-	<method> oalSetAutoInit(val) -> None
-		# changes wether or not PyOpenAL initializes automatically
-			<bool> val # wether or not to auto-init
 			
 	<method> oalQuit() -> None
 		# exits out of OpenAL and destroys all existing Sources and Buffers
@@ -332,6 +322,28 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 			
 		<method> Buffer.destroy() -> None
 			# destroy this streambuffer
+			
+	<method> oalGetEnum(enum) -> <str> ENUM
+		# returns a literal representation of enum 
+			<int> enum # AL_ or ALC_ enumerator
+			
+	<method> oalGetALEnum(enum) -> <str> ENUM
+		# returns a literal representation of an AL_ enum 
+			<int> enum # AL_ enumerator
+			
+	<method> oalGetALCEnum(enum) -> <str> ENUM
+		# returns a literal representation of an ALC_ enum 
+			<int> enum # ALC_ enumerator
+			
+	<method> oalGetContext() -> <int> context
+		# returns the context used by PyOpenAL
+		
+	<method> oalGetDevice() -> <int> device
+		# returns the device used by PyOpenAL
+		
+	<method> oalSetAutoInit(val) -> None
+		# changes wether or not PyOpenAL initializes automatically
+			<bool> val # wether or not to auto-init
 			
 		# The other methods and variables are the same as in Source 
 		# (note that you can't loop, because the file can be read only once (by now))
