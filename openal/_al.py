@@ -1,9 +1,20 @@
+import sys
 import ctypes
 import ctypes.util
 
-lib_path = ctypes.util.find_library('OpenAL32')
+lib_name = 'openal'
+lib_path = ctypes.util.find_library(lib_name)
+
 if lib_path is None:
-    raise ImportError('OpenAL32.dll not found')
+    name = lib_name + ('64' if sys.maxsize > 2**32 else '32')
+    lib_path = ctypes.util.find_library(name)
+
+    if lib_path is None:
+        lib_path = ctypes.util.find_library(lib_name + '32')
+
+        if lib_path is None:
+            raise ImportError('OpenAL shared library not found')
+
 lib = ctypes.CDLL(lib_path)
 
 AL_NONE = 0
