@@ -9,7 +9,7 @@ You can install it using the PyPI:
 	pip install PyOpenAL
 
 	
-PyOpenAL requires a dynamic OpenAL library (OpenAL32.dll). 
+PyOpenAL requires a dynamic OpenAL library (e.g. OpenAL32.dll). 
 You can use the [official OpenAL library](http://www.openal.org/) (deprecated) or the much better sounding [OpenAL Soft library](http://kcat.strangesoft.net/openal.html), which is still actively developed (or any other OpenAL compatible library).
 
 PyOpenAL provides OpenAL bindings, as you would find them in C++, meaning you can follow any [OpenAL C++ tutorial](http://www.openal.org/documentation/) with Python.
@@ -21,7 +21,7 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 ### Examples
 ##### Playing a wave file
 
-	# import PyOpenAL (will require OpenAL32.dll)
+	# import PyOpenAL (will require an OpenAL library)
 	from openal import * 
 	
 	# import the time module, for sleeping during playback
