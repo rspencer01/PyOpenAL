@@ -35,3 +35,4 @@ pypi/upload.bat
 *.wav
 *.whl
 *.gz
+test 2.py

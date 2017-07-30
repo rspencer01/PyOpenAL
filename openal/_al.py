@@ -1,4 +1,5 @@
 import sys
+import os
 import ctypes
 import ctypes.util
 
@@ -7,10 +8,25 @@ lib_path = ctypes.util.find_library(lib_name)
 
 if lib_path is None:
     name = lib_name + ('64' if sys.maxsize > 2**32 else '32')
-    lib_path = ctypes.util.find_library(name)
+    
+    here = os.getcwd()
+    local_files = os.listdir(here)
+    lib_path = None
+    for file_name in local_files:
+        if os.path.splitext(file_name)[1].lower() in (".lib", ".a", ".so", ".la", ".dll") and name in file_name.lower():
+            lib_path = os.path.join(here, file_name)
+
+    if not lib_path:
+        lib_path = ctypes.util.find_library(name)
 
     if lib_path is None:
-        lib_path = ctypes.util.find_library(lib_name + '32')
+        lib_path = None
+        for file_name in local_files:
+            if os.path.splitext(file_name)[1].lower() in (".lib", ".a", ".so", ".la", ".dll") and lib_name+"32" in file_name.lower():
+                lib_path = os.path.join(here, file_name)
+
+        if not lib_path:
+            lib_path = ctypes.util.find_library(lib_name + '32')
 
         if lib_path is None:
             raise ImportError('OpenAL shared library not found')
