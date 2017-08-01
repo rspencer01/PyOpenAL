@@ -454,7 +454,7 @@ def _check():
 def _no_pyogg_error(*args, **kw):
     _err("You have to set up pyogg in order to use this function. Go to https://github.com/Zuzu-Typ/PyOgg to get it")
 
-def _to_val(self,value):
+def _to_val(value):
     if type(value) in (float, bool, _vec3, _vec6):
         return value
     elif type(value) in (int,):
@@ -533,7 +533,7 @@ if WAVE_AVAIL:
 else:
     class WaveFile:
         def __init__(*args, **kw):
-            _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
+            _err("Wave seems to be unavailable (maybe your Python version doesn't support it...?")
         
 class Listener:
     """An interface to the OpenAL Listener (you)
@@ -553,16 +553,16 @@ class Listener:
          respective set_ functions (e.g. set_gain))"""
         if enum in (AL_GAIN,):
             value = ctypes.c_float()
-            alGetListenerf(self.id, enum, ctypes.pointer(value))
+            alGetListenerf(enum, ctypes.pointer(value))
 
         elif enum in (AL_POSITION,
                       AL_VELOCITY):
             value = (ctypes.c_float * 3)()
-            alGetListenerfv(self.id, enum, ctypes.pointer(value))
+            alGetListenerfv( enum, ctypes.pointer(value))
 
         elif enum in (AL_ORIENTATION,):
             value = (ctypes.c_float * 6)()
-            alGetListenerfv(self.id, enum, ctypes.pointer(value))
+            alGetListenerfv( enum, ctypes.pointer(value))
 
         else:
             _err("cannot get({}), this enum doesn't exist or can't be grabbed".format(enum))
@@ -575,16 +575,16 @@ class Listener:
         you can also use the set_ methods (e.g. set_gain),
         which will also update the instance variables (e.g. gain)"""
         if type(value) in (float,):
-            alListenerf(self.id, ctypes.c_int(enum), ctypes.c_float(value))
+            alListenerf(ctypes.c_int(enum), ctypes.c_float(value))
         elif type(value) in (_vec3, _vec6):
-            alListenerfv(self.id, ctypes.c_int(enum), value.asCTuple())
+            alListenerfv(ctypes.c_int(enum), value.asCTuple())
         elif type(value) in (ctypes.c_float*3, ctypes.c_float*6):
-            alListenerfv(self.id,ctypes.c_int(enum), value)
+            alListenerfv(ctypes.c_int(enum), value)
         elif type(value) in (tuple, list):
             if len(value) == 3:
-                alListenerfv(self.id, ctypes.c_int(enum), _vec3(value).asCTuple())
+                alListenerfv(ctypes.c_int(enum), _vec3(value).asCTuple())
             elif len(value) == 6:
-                alListenerfv(self.id, ctypes.c_int(enum), _vec6(value).asCTuple())
+                alListenerfv(ctypes.c_int(enum), _vec6(value).asCTuple())
 
     def move(self, vec3):
         """move(tuple or list vec3) -> None
@@ -614,6 +614,7 @@ class Listener:
             self.position = _vec3(vec3)
             self.set(AL_POSITION, self.position)
         except:
+            traceback.print_exc()
             _err("Unsupported argument for set_position: {}".format(vec3))
 
     def set_orientation(self,vec6):
@@ -992,6 +993,11 @@ class Source:
         """rewind() -> None
         sets playback position to the beginning of the audio track."""
         alSourceRewind(self.id)
+
+    def update(self):
+        """update() -> False
+        this is a dummy for SourceStream's update() function"""
+        return False
 
 class SourceStream(Source):
     def __init__(self, stream):
