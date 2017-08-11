@@ -2,7 +2,7 @@
 
 PyOpenAL provides OpenAL bindings for python as well as an interface to them.
 
-It also provides a simple way to play WAVE and even OGG Vorbis and OGG Opus files, the latter two if used together with [PyOgg](https://github.com/Zuzu-Typ/PyOgg).
+It also provides a simple way to play WAVE and even OGG Vorbis, OGG Opus and FLAC files, the latter ones if used together with [PyOgg](https://github.com/Zuzu-Typ/PyOgg).
 
 You can install it using the PyPI:
 
@@ -16,7 +16,7 @@ PyOpenAL provides OpenAL bindings, as you would find them in C++, meaning you ca
 OpenAL's methods expect C types as arguments, which means you will have to convert Python's types to C types using [ctypes](https://docs.python.org/3/library/ctypes.html) if you want to use them directly.
 Don't worry though, PyOpenAL can be used without the need to do that.
 
-I removed the support for ALUT, because it is basically impossible to build nowadays. If you want ALUT support, please use the original [PyOpenAL from forrestv](https://github.com/forrestv/PyOpenAL)
+I removed the support for ALUT, because it is basically impossible to build nowadays. If you want ALUT support, please use the original [python-openal from forrestv](https://github.com/forrestv/python-openal)
 
 ### Examples
 ##### Playing a wave file
@@ -115,12 +115,12 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 		# exits out of OpenAL and destroys all existing Sources and Buffers
 		
 	<method> oalOpen(path, ext_hint = None) -> Source
-		# loads a WAVE / Ogg Vorbis / Ogg Opus file to a Source object
+		# loads a WAVE / Ogg Vorbis / Ogg Opus / FLAC file to a Source object
 			<str> path # path to the file (relative or absolute)
 			<str> ext_hint # if the filetype is not wav, wave, ogg, vorbis or opus, you should supply a hint to the extension
 			
 	<method> oalStream(path, ext_hint = None) -> SourceStream
-		# loads a WAVE /  Ogg Vorbis / Ogg Opus file to a SourceStream object, that streams the data
+		# loads a WAVE /  Ogg Vorbis / Ogg Opus / FLAC file to a SourceStream object, that streams the data
 		# you should use this instead of Source for Soundtracks or other long tracks (as it uses less memory)
 		# you will have to update it frequently to avoid suffocation of the stream
 		# you can neither rewind nor loop a SourceStream (currently)
