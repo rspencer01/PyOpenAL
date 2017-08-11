@@ -32,6 +32,19 @@ WAVE_STREAM_BUFFER_SIZE = 4096*2
 
 MAX_FLOAT = sys.float_info.max
 
+ALboolean = ctypes.c_bool
+ALchar = ctypes.c_char
+ALbyte = ctypes.c_byte
+ALubyte = ctypes.c_ubyte
+ALshort = ctypes.c_int16
+ALushort = ctypes.c_uint16
+ALint = ctypes.c_int32
+ALuint = ctypes.c_uint32
+ALsizei = ctypes.c_int32
+ALenum = ctypes.c_int32
+ALfloat = ctypes.c_float
+ALdouble = ctypes.c_double
+
 _items = []
 
 class OalError(Exception):
@@ -1134,6 +1147,11 @@ if PYOGG_AVAIL or WAVE_AVAIL:
                 _no_pyogg_error()
                 return
             file_ = OpusFile(path)
+        elif ext_hint in ("flac", ".flac"):
+            if not PYOGG_FLAC_AVAIL:
+                _no_pyogg_error()
+                return
+            file_ = FlacFile(path)
         elif ext_hint in ("wav", ".wav", ".wave", "wave"):
             if not WAVE_AVAIL:
                 _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
@@ -1168,6 +1186,12 @@ if PYOGG_AVAIL or WAVE_AVAIL:
                 _no_pyogg_error()
                 return
             stream = OpusFileStream(path)
+
+        elif ext_hint in ("flac", ".flac"):
+            if not PYOGG_FLAC_AVAIL:
+                _no_pyogg_error()
+                return
+            stream = FlacFileStream(path)
         elif ext_hint in ("wav", ".wav", "wave", ".wave"):
             if not WAVE_AVAIL:
                 _err("Wave seems top be unavailable (maybe your Python version doesn't support it...?")
