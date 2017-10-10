@@ -205,13 +205,13 @@ I removed the support for ALUT, because it is basically impossible to build nowa
 		<float> Source.cone_outer_gain
 			# the source's current cone_outer_gain
 			
-		<vec3> Source.position
+		<numpy.ndarray> Source.position
 			# the source's current position (use .x, .y, and .z to access it's items or .toTuple())
 			
-		<vec3> Source.velocity
+		<numpy.ndarray> Source.velocity
 			# the source's current velocity (use .x, .y, and .z to access it's items or .toTuple())
 			
-		<vec3> Source.direction
+		<numpy.ndarray> Source.direction
 			# the source's current velocity (use .x, .y, and .z to access it's items or .toTuple())
 			
 		<bool> Source.relative

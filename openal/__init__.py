@@ -1,11 +1,9 @@
 from ._al import *
 from ._alc import *
 
-import ctypes
+import ctypes, numpy
 
 import os, sys
-
-import traceback ## remove later
 
 try:
     from pyogg import *
@@ -52,365 +50,6 @@ class OalError(Exception):
 
 def _err(msg):
     raise OalError(msg)
-
-class _vec6:
-    def __init__(self, *args):
-        self.__truediv__ = self.__div__
-        if len(args) == 6:
-            self.x = float(args[0])
-            self.y = float(args[1])
-            self.z = float(args[2])
-            self.a = float(args[3])
-            self.b = float(args[4])
-            self.c = float(args[5])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
-            self.x = args[0][0]
-            self.y = args[0][1]
-            self.z = args[0][2]
-            self.a = args[0][3]
-            self.b = args[0][4]
-            self.c = args[0][5]
-        elif len(args) == 1:
-            self.x = args[0].x
-            self.y = args[0].y
-            self.z = args[0].z
-            self.a = args[0].a
-            self.b = args[0].b
-            self.c = args[0].c
-        else:
-            self.x = self.y = self.z = self.a = self.b = self.c = 0.
-    def __add__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        a = self.a
-        b = self.b
-        c = self.c
-        if len(args) == 6:
-            x += float(args[0])
-            y += float(args[1])
-            z += float(args[2])
-            a += float(args[3])
-            b += float(args[4])
-            c += float(args[5])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
-            x += args[0][0]
-            y += args[0][1]
-            z += args[0][2]
-            a += args[0][3]
-            b += args[0][4]
-            c += args[0][5]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x += args[0]
-            y += args[0]
-            z += args[0]
-            a += args[0]
-            b += args[0]
-            c += args[0]
-        else:
-            x += args[0].x
-            y += args[0].y
-            z += args[0].z
-            a += args[0].a
-            b += args[0].b
-            c += args[0].c
-        return (x,y,z, a, b, c)
-    def __mul__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        a = self.a
-        b = self.b
-        c = self.c
-        if len(args) == 6:
-            x *= float(args[0])
-            y *= float(args[1])
-            z *= float(args[2])
-            a *= float(args[3])
-            b *= float(args[4])
-            c *= float(args[5])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
-            x *= args[0][0]
-            y *= args[0][1]
-            z *= args[0][2]
-            a *= args[0][3]
-            b *= args[0][4]
-            c *= args[0][5]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x *= args[0]
-            y *= args[0]
-            z *= args[0]
-            a *= args[0]
-            b *= args[0]
-            c *= args[0]
-        else:
-            x *= args[0].x
-            y *= args[0].y
-            z *= args[0].z
-            a *= args[0].a
-            b *= args[0].b
-            c *= args[0].c
-        return (x,y,z, a, b, c)
-    def __sub__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        a = self.a
-        b = self.b
-        c = self.c
-        if len(args) == 6:
-            x -= float(args[0])
-            y -= float(args[1])
-            z -= float(args[2])
-            a -= float(args[3])
-            b -= float(args[4])
-            c -= float(args[5])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
-            x -= args[0][0]
-            y -= args[0][1]
-            z -= args[0][2]
-            a -= args[0][3]
-            b -= args[0][4]
-            c -= args[0][5]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x -= args[0]
-            y -= args[0]
-            z -= args[0]
-            a -= args[0]
-            b -= args[0]
-            c -= args[0]
-        else:
-            x -= args[0].x
-            y -= args[0].y
-            z -= args[0].z
-            a -= args[0].a
-            b -= args[0].b
-            c -= args[0].c
-        return (x,y,z)
-    def __div__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        a = self.a
-        b = self.b
-        c = self.c
-        if len(args) == 6:
-            x /= float(args[0])
-            y /= float(args[1])
-            z /= float(args[2])
-            a /= float(args[3])
-            b /= float(args[4])
-            c /= float(args[5])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*6, ctypes.c_int*6, tuple, list):
-            x /= args[0][0]
-            y /= args[0][1]
-            z /= args[0][2]
-            a /= args[0][3]
-            b /= args[0][4]
-            c /= args[0][5]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x /= args[0]
-            y /= args[0]
-            z /= args[0]
-            a /= args[0]
-            b /= args[0]
-            c /= args[0]
-        else:
-            x /= args[0].x
-            y /= args[0].y
-            z /= args[0].z
-            a /= args[0].a
-            b /= args[0].b
-            c /= args[0].c
-        return (x,y,z,a,b,c)
-    def __iadd__(self, *args):
-        self.x, self.y, self.z, self.a, self.b, self.c = self.__add__(*args)
-        return self
-    def __isub__(self, *args):
-        self.x, self.y, self.z, self.a, self.b, self.c = self.__sub__(*args)
-        return self
-    def __imul__(self, *args):
-        self.x, self.y, self.z, self.a, self.b, self.c = self.__mul__(*args)
-        return self
-    def __idiv__(self, *args):
-        self.x, self.y, self.z, self.a, self.b, self.c = self.__div__(*args)
-        return self
-    def __str__(self):
-        return "vec6( {} , {} , {} , {} , {} , {})".format(self.x, self.y, self.z, self.a, self.b, self.c)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __getitem__(self, index):
-        if index in (0, -6):
-            return self.x
-        elif index in (1, -5):
-            return self.y
-        elif index in (2, -4):
-            return self.z
-        elif index in (3, -3):
-            return self.a
-        elif index in (4, -2):
-            return self.b
-        elif index in (5, -1):
-            return self.c
-        elif type(index) == slice:
-            return self.asTuple().__getitem__(index)
-        else:
-            raise IndexError()
-
-    def asTuple(self):
-        return (self.x, self.y, self.z, self.a, self.b, self.c )
-
-    def asCTuple(self):
-        return (ctypes.c_float*6)(*self.asTuple())
-
-class _vec3:
-    def __init__(self, *args):
-        self.__truediv__ = self.__div__
-        if len(args) == 3:
-            self.x = float(args[0])
-            self.y = float(args[1])
-            self.z = float(args[2])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
-            self.x = args[0][0]
-            self.y = args[0][1]
-            self.z = args[0][2]
-        elif len(args) == 1:
-            self.x = args[0].x
-            self.y = args[0].y
-            self.z = args[0].z
-        else:
-            self.x = self.y = self.z = 0.
-    def __add__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        if len(args) == 3:
-            x += float(args[0])
-            y += float(args[1])
-            z += float(args[2])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
-            x += args[0][0]
-            y += args[0][1]
-            z += args[0][2]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x += args[0]
-            y += args[0]
-            z += args[0]
-        else:
-            x += args[0].x
-            y += args[0].y
-            z += args[0].z
-        return (x,y,z)
-    def __mul__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        if len(args) == 3:
-            x *= float(args[0])
-            y *= float(args[1])
-            z *= float(args[2])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
-            x *= args[0][0]
-            y *= args[0][1]
-            z *= args[0][2]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x *= args[0]
-            y *= args[0]
-            z *= args[0]
-        else:
-            x *= args[0].x
-            y *= args[0].y
-            z *= args[0].z
-        return (x,y,z)
-    def __sub__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        if len(args) == 3:
-            x -= float(args[0])
-            y -= float(args[1])
-            z -= float(args[2])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
-            x -= args[0][0]
-            y -= args[0][1]
-            z -= args[0][2]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x -= args[0]
-            y -= args[0]
-            z -= args[0]
-        else:
-            x -= args[0].x
-            y -= args[0].y
-            z -= args[0].z
-        return (x,y,z)
-    def __div__(self, *args):
-        x = self.x
-        y = self.y
-        z = self.z
-        if len(args) == 3:
-            x /= float(args[0])
-            y /= float(args[1])
-            z /= float(args[2])
-            
-        elif len(args) == 1 and type(args[0]) in (ctypes.c_float*3, ctypes.c_int*3, tuple, list):
-            x /= args[0][0]
-            y /= args[0][1]
-            z /= args[0][2]
-        elif len(args) == 1 and type(args[0]) in (int, float):
-            x /= args[0]
-            y /= args[0]
-            z /= args[0]
-        else:
-            x /= args[0].x
-            y /= args[0].y
-            z /= args[0].z
-        return (x,y,z)
-    def __iadd__(self, *args):
-        self.x, self.y, self.z = self.__add__(*args)
-        return self
-    def __isub__(self, *args):
-        self.x, self.y, self.z = self.__sub__(*args)
-        return self
-    def __imul__(self, *args):
-        self.x, self.y, self.z = self.__mul__(*args)
-        return self
-    def __idiv__(self, *args):
-        self.x, self.y, self.z = self.__div__(*args)
-        return self
-    def __str__(self):
-        return "vec3( {} , {} , {} )".format(self.x,self.y,self.z)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __getitem__(self, index):
-        if index in (0, -3):
-            return self.x
-        elif index in (1, -2):
-            return self.y
-        elif index in (2, -1):
-            return self.z
-        elif type(index) == slice:
-            return self.asTuple().__getitem__(index)
-        else:
-            raise IndexError()
-
-    def asTuple(self):
-        return (self.x,self.y,self.z)
-
-    def asCTuple(self):
-        return (ctypes.c_float*3)(*self.asTuple())
 
 _oaldevice = None
 
@@ -468,21 +107,21 @@ def _no_pyogg_error(*args, **kw):
     _err("You have to set up pyogg in order to use this function. Go to https://github.com/Zuzu-Typ/PyOgg to get it")
 
 def _to_val(value):
-    if type(value) in (float, bool, _vec3, _vec6):
+    if type(value) in (float, bool, numpy.ndarray):
         return value
     elif type(value) in (int,):
         return float(value)
     elif type(value) in (ctypes.c_float*3,):
-        return _vec3(value)
+        return numpy.array(value)
     elif type(value) in (ctypes.c_float*6,):
-        return _vec6(value)
+        return numpy.array(value)
     elif type(value) in (ctypes.c_float, ctypes.c_int, ctypes.c_uint):
         return value.value
     elif type(value) in (tuple, list):
         if len(value) == 3:
-            return _vec3(value)
+            return numpy.array(value)
         elif len(value) == 6:
-            return _vec6(value)
+            return numpy.array(value)
 
 if WAVE_AVAIL:
     class WaveFile:
@@ -554,9 +193,9 @@ class Listener:
     you can retrieve it with oalGetListener()"""
     def __init__(self):
         self.gain = 0.
-        self.position = _vec3(0.,0.,0.)
-        self.orientation = _vec6(0.,0.,-1.,0.,1.,0.)
-        self.velocity = _vec3(0.,0.,0.)
+        self.position = numpy.array((0.,0.,0.), dtype=ctypes.c_float)
+        self.orientation = numpy.array((0.,0.,-1.,0.,1.,0.), dtype=ctypes.c_float)
+        self.velocity = numpy.array((0.,0.,0.), dtype=ctypes.c_float)
 
     def get(self, enum):
         """get(int enum) -> value
@@ -566,16 +205,16 @@ class Listener:
          respective set_ functions (e.g. set_gain))"""
         if enum in (AL_GAIN,):
             value = ctypes.c_float()
-            alGetListenerf(enum, ctypes.pointer(value))
+            alGetListenerf(enum, value)
 
         elif enum in (AL_POSITION,
                       AL_VELOCITY):
             value = (ctypes.c_float * 3)()
-            alGetListenerfv( enum, ctypes.pointer(value))
+            alGetListenerfv( enum, value)
 
         elif enum in (AL_ORIENTATION,):
             value = (ctypes.c_float * 6)()
-            alGetListenerfv( enum, ctypes.pointer(value))
+            alGetListenerfv( enum, value)
 
         else:
             _err("cannot get({}), this enum doesn't exist or can't be grabbed".format(enum))
@@ -589,15 +228,15 @@ class Listener:
         which will also update the instance variables (e.g. gain)"""
         if type(value) in (float,):
             alListenerf(ctypes.c_int(enum), ctypes.c_float(value))
-        elif type(value) in (_vec3, _vec6):
-            alListenerfv(ctypes.c_int(enum), value.asCTuple())
+        elif type(value) == numpy.ndarray:
+            alListenerfv(ctypes.c_int(enum), (ctypes.c_float*len(value))(*value))
         elif type(value) in (ctypes.c_float*3, ctypes.c_float*6):
             alListenerfv(ctypes.c_int(enum), value)
         elif type(value) in (tuple, list):
             if len(value) == 3:
-                alListenerfv(ctypes.c_int(enum), _vec3(value).asCTuple())
+                alListenerfv(ctypes.c_int(enum), (ctypes.c_float*3)(*numpy.array(value, dtype=ctypes.c_float)))
             elif len(value) == 6:
-                alListenerfv(ctypes.c_int(enum), _vec6(value).asCTuple())
+                alListenerfv(ctypes.c_int(enum), (ctypes.c_float*6)(*numpy.array(value, dtype=ctypes.c_float)))
 
     def move(self, vec3):
         """move(tuple or list vec3) -> None
@@ -614,7 +253,7 @@ class Listener:
         moves the Listener to vec3 (x,y,z).
         default is vec3( 0, 0, 0 )"""
         try:
-            self.position = _vec3(vec3)
+            self.position = numpy.array(vec3, dtype=ctypes.c_float)
             self.set(AL_POSITION, self.position)
         except:
             _err("Unsupported argument for move_to: {}".format(vec3))
@@ -624,10 +263,9 @@ class Listener:
         moves the Listener to vec3 (x,y,z).
         default is vec3( 0, 0, 0 )"""
         try:
-            self.position = _vec3(vec3)
+            self.position = numpy.array(vec3, dtype=ctypes.c_float)
             self.set(AL_POSITION, self.position)
         except:
-            traceback.print_exc()
             _err("Unsupported argument for set_position: {}".format(vec3))
 
     def set_orientation(self,vec6):
@@ -636,7 +274,7 @@ class Listener:
         (frontX, frontY, frontZ, upX, upY, upZ)
         default is vec6( 0, 0, -1, 0, 1, 0 )"""
         try:
-            self.orientation = _vec6(vec6)
+            self.orientation = numpy.array(vec6, dtype=ctypes.c_float)
             self.set(AL_ORIENTATION, self.orientation)
         except:
             _err("Unsupported argument for set_orientation: {}".format(vec6))
@@ -646,7 +284,7 @@ class Listener:
         sets the velocity of the Listener to vec3.
         default is vec3( 0, 0, 0 )"""
         try:
-            self.velocity = _vec3(vec3)
+            self.velocity = numpy.array(vec3, dtype=ctypes.c_float)
             self.set(AL_VELOCITY, self.velocity)
         except:
             _err("Unsupported argument for set_velocity: {}".format(vec3))
@@ -775,13 +413,13 @@ class Source:
 
         self.cone_outer_angle = 360.
 
-        self.position = _vec3(0.,0.,0.)
+        self.position = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
-        self.velocity = _vec3(0.,0.,0.)
+        self.velocity = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
         self.looping = False
 
-        self.direction = _vec3(0.,0.,0.)
+        self.direction = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
         self.source_relative = False
 
@@ -811,7 +449,7 @@ class Source:
                     AL_CONE_OUTER_ANGLE,
                     AL_REFERENCE_DISTANCE):
             value = ctypes.c_float()
-            alGetSourcef(self.id, enum, ctypes.pointer(value))
+            alGetSourcef(self.id, enum, value)
 
         elif enum in (AL_SOURCE_RELATIVE,
                       AL_BUFFER,
@@ -819,13 +457,13 @@ class Source:
                       AL_BUFFERS_QUEUED,
                       AL_BUFFERS_PROCESSED):
             value = ctypes.c_uint()
-            alGetSourcei(self.id, enum, ctypes.pointer(value))
+            alGetSourcei(self.id, enum, value)
 
         elif enum in (AL_POSITION,
                       AL_VELOCITY,
                       AL_DIRECTION):
             value = (ctypes.c_float * 3)()
-            alGetSourcefv(self.id, enum, ctypes.pointer(value))
+            alGetSourcefv(self.id, enum, value)
 
         else:
             _err("cannot get({}), this enum doesn't exist or can't be grabbed".format(enum))
@@ -841,15 +479,15 @@ class Source:
             alSourcef(self.id, ctypes.c_int(enum), ctypes.c_float(value))
         elif type(value) in (int, bool):
             alSourcei(self.id, ctypes.c_int(enum), ctypes.c_int(value))
-        elif type(value) in (_vec3, _vec6):
-            alSourcefv(self.id, ctypes.c_int(enum), value.asCTuple())
+        elif type(value) == numpy.ndarray:
+            alSourcefv(self.id, ctypes.c_int(enum), (ctypes.c_float*len(value))(*value))
         elif type(value) in (ctypes.c_float*3, ctypes.c_float*6):
             alSourcefv(self.id,ctypes.c_int(enum), value)
         elif type(value) in (tuple, list):
             if len(value) == 3:
-                alSourcefv(self.id, ctypes.c_int(enum), _vec3(value).asCTuple())
+                alSourcefv(self.id, ctypes.c_int(enum), (ctypes.c_float*3)(*numpy.array(value, dtype=ctypes.c_float)))
             elif len(value) == 6:
-                alSourcefv(self.id, ctypes.c_int(enum), _vec6(value).asCTuple())
+                alSourcefv(self.id, ctypes.c_int(enum), (ctypes.c_float*6)(*numpy.array(value, dtype=ctypes.c_float)))
 
     def destroy(self):
         """destroy() -> None
@@ -1041,13 +679,13 @@ class SourceStream(Source):
 
         self.cone_outer_angle = 360.
 
-        self.position = _vec3(0.,0.,0.)
+        self.position = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
-        self.velocity = _vec3(0.,0.,0.)
+        self.velocity = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
         self.looping = False
 
-        self.direction = _vec3(0.,0.,0.)
+        self.direction = numpy.array((0.,0.,0.),dtype=ctypes.c_float)
 
         self.source_relative = False
 
