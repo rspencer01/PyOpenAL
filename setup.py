@@ -12,16 +12,6 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description_list = f.readlines()
-
-    long_description = ""
-
-    for line in long_description_list:
-        long_description += line
-    long_description = long_description.replace("\r", "")
-
 setup(
     name='PyOpenAL',
 
@@ -31,7 +21,8 @@ setup(
     version='0.7.0a1',
 
     description='OpenAL integration for Python',
-    long_description=long_description,
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
 
     # The project's main homepage.
     url='https://github.com/Zuzu-Typ/PyOpenAL',
